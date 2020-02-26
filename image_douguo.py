@@ -1,13 +1,15 @@
-import requests
-from urllib import parse
 import os
-from bs4 import BeautifulSoup as bs
+from urllib import parse
+import requests # install
+from bs4 import BeautifulSoup as bs # install
 
 #https://www.douguo.com/search/recipe/%E7%B3%96%E9%86%8B%E6%8E%92%E9%AA%A8/0/0
 douguo_api='https://www.douguo.com/search/recipe/'
 keyword='鱼香茄子'
 headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36'}
 path='douguo'
+
+
 def download(lis,path):
 	number=1
 	c_path=path+'\\'+keyword
@@ -23,6 +25,7 @@ def download(lis,path):
 		print(str(number)+'.'+url+' downloaded!')
 		number=number+1
 	print('downloading successfully!')
+
 
 def main():
 	global keyword
@@ -40,8 +43,6 @@ def main():
 			#print(img_url)
 			lis.append(img_url)
 	download(lis, path)
-
-
 
 
 

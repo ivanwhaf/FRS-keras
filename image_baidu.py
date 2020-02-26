@@ -1,14 +1,15 @@
-import requests
-import urllib
-import json
 import os
+import json
+import urllib
+import requests # install
 
-keyword_list=['鱼香茄子']
 width=''
 height=''
-page=6 #需要下载的页数
-rn=50 #每一页数量
+page=6 # 需要下载的页数
+rn=50 # 每一页数量
 
+
+keyword_list=['鱼香茄子']
 path='baidu'
 headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36',\
 		'Referer':'https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=&sf=1&fmq=1551240778642_R\

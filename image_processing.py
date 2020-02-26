@@ -1,10 +1,10 @@
 # Author:Ivan
 import os
-import cv2
 import random
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
+import cv2 # install
+import numpy as np # install
+from PIL import Image # install
+import matplotlib.pyplot as plt # install
 
 def load_img(path,category_number,number_per_category,width,height,depth,train_per_category,valid_per_category,test_per_category):
     '''
@@ -30,12 +30,12 @@ def load_img(path,category_number,number_per_category,width,height,depth,train_p
            (test_data, test_label)  测试数据和标签
            category 类别列表
     '''
-    number=category_number*number_per_category #图片总数
-    n=0 #images[]数组下标
-    c=0 #已读取的类别数量
+    number=category_number*number_per_category # 图片总数
+    n=0 # images[]数组下标
+    c=0 # 已读取的类别数量
     category=[]
-    img_size=width*height #图片大小 宽*高
-    images=np.empty((number,img_size*depth)) #图片集
+    img_size=width*height # 图片大小 宽*高
+    images=np.empty((number,img_size*depth)) # 图片集
     img_categories=os.listdir(path)
     print('image categories:')
     for img_category in img_categories:
@@ -85,7 +85,6 @@ def load_img(path,category_number,number_per_category,width,height,depth,train_p
             for i in range(n-number_per_category,n):
                 images[i]=im[i%number_per_category]
 
-
     label=np.empty(number)
     for i in range(category_number):
         label[i*number_per_category:i*number_per_category+number_per_category]=i
@@ -95,12 +94,12 @@ def load_img(path,category_number,number_per_category,width,height,depth,train_p
     valid_data_number=valid_per_category*category_number
     test_data_number=test_per_category*category_number
 
-    train_data = np.empty((train_data_number, img_size*depth))  
-    train_label = np.empty(train_data_number)  
-    valid_data = np.empty((valid_data_number, img_size*depth))  
-    valid_label = np.empty(valid_data_number)  
-    test_data = np.empty((test_data_number, img_size*depth))  
-    test_label = np.empty(test_data_number)   
+    train_data = np.empty((train_data_number, img_size*depth))
+    train_label = np.empty(train_data_number)
+    valid_data = np.empty((valid_data_number, img_size*depth))
+    valid_label = np.empty(valid_data_number)
+    test_data = np.empty((test_data_number, img_size*depth))
+    test_label = np.empty(test_data_number)
 
     for i in range(category_number):
         train_data [i*train_per_category : i*train_per_category+train_per_category] = images[i*number_per_category : i*number_per_category+train_per_category] # 训练集数据

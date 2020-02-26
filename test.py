@@ -1,11 +1,13 @@
+import cv2
+import numpy as np
 from keras.models import load_model
 from image_processing import *
 from keras import backend as K
 from keras.models import Model
-import cv2
-import numpy as np
 
-width, height = 200,180  #输入图像维度
+
+# 输入图像维度
+width, height = 200,180 
 img_size=width*height
 
 

@@ -1,6 +1,8 @@
-import cv2
+import os
 import sys
-import keras
+import threading
+import cv2 # install 
+import keras # install
 from keras.models import load_model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
@@ -8,17 +10,17 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.optimizers import SGD  
 from keras.utils import np_utils
 from keras import backend as K
-import h5py
-import os
-import numpy as np
-np.random.seed(1337)
-from PIL import Image,ImageDraw,ImageFont
-import wx
-import threading
-from PyQt5.QtWidgets import QWidget,QPushButton,QApplication,QLabel,QMainWindow
+import h5py # install
+import numpy as np # install
+from PIL import Image,ImageDraw,ImageFontf # install
+import wx # install
+from PyQt5.QtWidgets import QWidget,QPushButton,QApplication,QLabel,QMainWindow # install
 from PyQt5.QtGui import QPixmap,QImage,QFont
 from PyQt5.QtCore import Qt,QTimer
-#输入图像维度
+
+np.random.seed(1337)
+
+# 输入图像维度
 width=200
 height=200  
 img_size=width*height

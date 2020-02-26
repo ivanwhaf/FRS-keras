@@ -1,10 +1,9 @@
 import os
-import cv2
 import time
-import numpy as np
-np.random.seed(1337)
-from PIL import Image  
-import keras
+import cv2 # install
+import numpy as np # install
+from PIL import Image  # install
+import keras # install
 from keras import backend as K
 from keras.models import Model
 from keras.utils import np_utils
@@ -14,26 +13,28 @@ from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Dense, Dropout, Activation, Flatten
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # install
 from image_processing import load_img
-os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin'
 
-path='data' #训练集路径
-epochs = 2000
-nb_classes = 5 #图片种类
-number_per_category = 200 #每类图片数量
-batch_size = 32 
-lr = 0.00004 #学习率
-activation = 'tanh' #激活函数
-width,height,depth = 200, 200, 3 #图片的宽高深度
-nb_filters1, nb_filters2 = 5, 10  #卷积核的数目（即输出的维度） 
-train_per_category = int(number_per_category*0.8) #每类训练数量
-valid_per_category = int(number_per_category*0.1) #每类验证数量
-test_per_category  = int(number_per_category*0.1) #每类测试数量
+np.random.seed(1337)
+os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin' # 添加graphviz至环境变量 用于输出网络结构图
 
+path='data' # 训练集路径
+epochs = 2000 # 轮数
+nb_classes = 5 # 图片种类
+number_per_category = 200 # 每类图片数量
+batch_size = 32 # 一次训练样本数
+lr = 0.0001 # 学习率
+activation = 'tanh' # 激活函数
+width,height,depth = 200, 200, 3 # 图片的宽、高、深度
+nb_filters1, nb_filters2 = 5, 10  # 卷积核的数目（即输出的维度） 
+train_per_category = int(number_per_category*0.8) # 每个类别训练数量
+valid_per_category = int(number_per_category*0.1) # 每个类别验证数量
+test_per_category  = int(number_per_category*0.1) # 每个类别测试数量
 
 
 class LossHistory(keras.callbacks.Callback):
+    # 损失历史记录 输出参数变化图像
     def on_train_begin(self, logs={}):
         self.losses = {'batch':[], 'epoch':[]}
         self.accuracy = {'batch':[], 'epoch':[]}
@@ -76,48 +77,49 @@ class LossHistory(keras.callbacks.Callback):
 
 
 
-def set_model(lr=lr,decay=1e-6,momentum=0.9): 
+def set_model(lr=lr,decay=1e-6,momentum=0.9):
+    # 模型初始化设置
     model = Sequential()
     if K.image_data_format() == 'channels_first':
         model.add(Conv2D(nb_filters1, kernel_size=(3, 3), input_shape = (depth, height, width),name='conv1'))
     else:
         model.add(Conv2D(nb_filters1, kernel_size=(3, 3), input_shape = (height, width, depth),name='conv1'))
     model.add(Activation(activation))
-    model.add(MaxPooling2D(pool_size=(2, 2)))  
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(Conv2D(nb_filters2, kernel_size=(3, 3),name='conv2')) 
+    model.add(Conv2D(nb_filters2, kernel_size=(3, 3),name='conv2'))
     model.add(Activation(activation))
-    model.add(MaxPooling2D(pool_size=(2, 2)))  
+    model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.9))
 
-    model.add(Flatten())      
-    model.add(Dense(128)) #Full connection  
+    model.add(Flatten())
+    model.add(Dense(128)) # Full connection
     model.add(Activation(activation))
     model.add(Dropout(0.9))
-    model.add(Dense(nb_classes,name='dense2'))  
-    model.add(Activation('softmax'))  
-    sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)  
+    model.add(Dense(nb_classes,name='dense2')) # output
+    model.add(Activation('softmax'))
+
+    sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd,metrics=['accuracy'])
-    #plot_model(model, to_file='model.png')  
+    #plot_model(model, to_file='model.png')  # 保存模型结构图
     model.summary()
-    return model  
+    return model
 
 
 
 
-
-def train_model(model,X_train, Y_train, X_val, Y_val):  
+def train_model(model,X_train, Y_train, X_val, Y_val):
     model.fit(X_train, Y_train, batch_size = batch_size, epochs = epochs, shuffle=True,
-          verbose=1, validation_data=(X_val, Y_val),callbacks=[history])  
+          verbose=1, validation_data=(X_val, Y_val),callbacks=[history])
     model.save('model.h5')
-    return model  
+    return model
 
 
 
-def test_model(X,Y):  
+def test_model(X_test,Y_test):
     model=load_model('model.h5')
-    score = model.evaluate(X, Y, verbose=0)
-    return score  
+    score = model.evaluate(X_test, Y_test, verbose=0)
+    return score
 
 
 
@@ -161,6 +163,7 @@ def conv_output(model, layer_name, img):
 
 
 def show_intermediate_output(model):
+    # 显示中间层输出
     image=cv2.imread('test.jpg')
     image=cv2.resize(image,(width,height))
     image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
@@ -179,49 +182,48 @@ def show_intermediate_output(model):
     #cv2.imshow('i',image_array)
     #cv2.imshow('o',o)
 
+
 history = LossHistory()
 
 def main():
-    (X_train, y_train), (X_val, y_val),(X_test, y_test),category = load_img(path,nb_classes,number_per_category,width,height,depth,train_per_category,valid_per_category,test_per_category)  #加载图片训练集
+    (X_train, y_train), (X_val, y_val),(X_test, y_test),category = load_img(path,nb_classes,number_per_category,width,height,depth,train_per_category,valid_per_category,test_per_category)  # 加载图片训练集
     
     if K.image_data_format() == 'channels_first':
-        X_train = X_train.reshape(X_train.shape[0], depth, height, width)  
-        X_val = X_val.reshape(X_val.shape[0], depth, height, width)  
+        X_train = X_train.reshape(X_train.shape[0], depth, height, width)
+        X_val = X_val.reshape(X_val.shape[0], depth, height, width)
         X_test = X_test.reshape(X_test.shape[0], depth, height, width)  
         input_shape = (depth, height, width)
     else:
-        X_train = X_train.reshape(X_train.shape[0], height, width, depth)  
-        X_val = X_val.reshape(X_val.shape[0], height, width, depth)  
-        X_test = X_test.reshape(X_test.shape[0], height, width, depth)  
+        X_train = X_train.reshape(X_train.shape[0], height, width, depth)
+        X_val = X_val.reshape(X_val.shape[0], height, width, depth)
+        X_test = X_test.reshape(X_test.shape[0], height, width, depth)
         input_shape = (height, width, depth) # depth为图像像素深度
     
     print('X_train shape:', X_train.shape)
-    print(X_train.shape[0], 'train samples') 
-    print(X_val.shape[0], 'validate samples')  
+    print(X_train.shape[0], 'train samples')
+    print(X_val.shape[0], 'validate samples')
     print(X_test.shape[0], 'test samples')
   
-    # convert class vectors to binary class matrices  
-    Y_train = np_utils.to_categorical(y_train, nb_classes)  
-    Y_val = np_utils.to_categorical(y_val, nb_classes)  
-    Y_test = np_utils.to_categorical(y_test, nb_classes)  
+    # convert class vectors to binary class matrices
+    Y_train = np_utils.to_categorical(y_train, nb_classes)
+    Y_val = np_utils.to_categorical(y_val, nb_classes)
+    Y_test = np_utils.to_categorical(y_test, nb_classes)
   
-    model = set_model() #加载神经网络模型
-    plot_model(model, to_file='model.png')#保存网络结构图
+    model = set_model() # 加载神经网络模型
+
     with open('classes.txt','w') as f:
         for c in category:
             f.write(c+'\n')
 
-
     start=time.clock()
-    model=train_model(model, X_train, Y_train, X_val, Y_val) #训练模型
+    model=train_model(model, X_train, Y_train, X_val, Y_val) # 训练模型
     end=time.clock()
     print('训练耗时:'+str(end-start)+'s')
 
-    score = test_model(X_test, Y_test)  
-    #model=load_model('model.h5')
+    score = test_model(X_test, Y_test)
 
-    classes = model.predict_classes(X_test, verbose=0)  
-    test_accuracy = np.mean(np.equal(y_test, classes)) 
+    classes = model.predict_classes(X_test, verbose=0)
+    test_accuracy = np.mean(np.equal(y_test, classes))
     
     wrong=0
     for i in range(0,nb_classes*test_per_category):
