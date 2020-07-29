@@ -2,8 +2,9 @@ import os
 import time
 import cv2  # install
 import numpy as np  # install
-from PIL import Image  # install
+# from PIL import Image  # install
 import keras  # install
+from keras.regularizers import l1, l2
 from keras import backend as K
 from keras.models import Model
 from keras.utils import np_utils
@@ -11,132 +12,64 @@ from keras.utils import plot_model
 from keras.optimizers import SGD
 from keras.models import Sequential
 from keras.models import load_model
-from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Conv2D, MaxPooling2D, SeparableConv2D
 from keras.layers import Dense, Dropout, Activation, Flatten
 import matplotlib.pyplot as plt  # install
-from image_preprocessing import load_img
+from image_preprocess import load_img
+from image_util import show_intermediate_output, show_heatmap
 
 np.random.seed(1337)
 os.environ["PATH"] += os.pathsep + \
     'C:/Program Files (x86)/Graphviz2.38/bin'  # 添加graphviz至环境变量 用于输出网络结构图
 
 path = 'data'  # 数据集路径
-epochs = 1000  # 轮数
+epochs = 3000  # 轮数
 nb_classes = 5  # 图片种类
-number_per_category = 100  # 每类图片数量
-batch_size = 32  # 一次训练的样本数
-lr = 0.0001  # 学习率
-activation = 'tanh'  # 激活函数
-width, height, depth = 200, 200, 3  # 图片的宽、高、深度
+nb_per_class = 200  # 每类图片数量
+batch_size = 64  # 一次训练的样本数
+lr = 0.0002  # 学习率
+activation = 'relu'  # 激活函数
+width, height, depth = 100, 100, 3  # 图片的宽、高、深度
 nb_filters1, nb_filters2 = 5, 10  # 卷积核的数目（即输出的维度）
-train_per_category = int(number_per_category*0.8)  # 每个类别训练数量
-valid_per_category = int(number_per_category*0.1)  # 每个类别验证数量
-test_per_category = int(number_per_category*0.1)  # 每个类别测试数量
+train_per_category = int(nb_per_class*0.8)  # 每个类别训练数量
+valid_per_category = int(nb_per_class*0.1)  # 每个类别验证数量
+test_per_category = int(nb_per_class*0.1)  # 每个类别测试数量
 
 
 def set_model(lr=lr, decay=1e-6, momentum=0.9):
     # 模型初始化设置
     model = Sequential()
     if K.image_data_format() == 'channels_first':
-        model.add(Conv2D(nb_filters1, kernel_size=(3, 3),
-                         input_shape=(depth, height, width), name='conv1'))
+        model.add(SeparableConv2D(nb_filters1, kernel_size=(3, 3), kernel_regularizer=l2(0.01),
+                                  input_shape=(depth, height, width), name='conv1'))
     else:
-        model.add(Conv2D(nb_filters1, kernel_size=(3, 3),
-                         input_shape=(height, width, depth), name='conv1'))
+        model.add(SeparableConv2D(nb_filters1, kernel_size=(3, 3),
+                                  input_shape=(height, width, depth), name='conv1'))
     model.add(Activation(activation))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(MaxPooling2D(pool_size=(2, 2), name='maxpooling1'))
+    model.add(Dropout(0.5))
 
-    model.add(Conv2D(nb_filters2, kernel_size=(3, 3), name='conv2'))
+    model.add(SeparableConv2D(nb_filters2, kernel_size=(3, 3),
+                              kernel_regularizer=l2(0.01), name='conv2'))
     model.add(Activation(activation))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.6))
+    model.add(MaxPooling2D(pool_size=(2, 2), name='maxpooling2'))
+    model.add(Dropout(0.5))
 
     model.add(Flatten())
-    model.add(Dense(128, name='dense1'))  # Full connection
+    model.add(Dense(128, kernel_regularizer=l2(
+        0.01), name='dense1'))  # Full connection
     model.add(Activation(activation))
-    model.add(Dropout(0.6))
+    model.add(Dropout(0.5))
 
     model.add(Dense(nb_classes, name='dense2'))  # output
     model.add(Activation('softmax'))
 
-    sgd = SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
+    sgd = SGD(lr=lr, decay=decay, momentum=momentum,
+              nesterov=True)  # optimizer
     model.compile(loss='categorical_crossentropy',
                   optimizer=sgd, metrics=['accuracy'])
-
-    plot_model(model, to_file='model.png')  # 保存模型结构图
-    model.summary()
+    model.summary()  # 输出模型各层的参数状况
     return model
-
-
-def train_model(model, X_train, Y_train, X_val, Y_val):
-    model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs, shuffle=True,
-              verbose=1, validation_data=(X_val, Y_val), callbacks=[history])
-    model.save('model.h5')
-    return model
-
-
-def test_model(X_test, Y_test):
-    model = load_model('model.h5')
-    score = model.evaluate(X_test, Y_test, verbose=0)
-    return score
-
-
-def deprocess_image(x):
-    if K.image_data_format() == 'channels_first':
-        x = x.transpose(1, 2, 3, 0)
-    elif K.image_data_format() == 'channels_last':
-        x = x.transpose(3, 1, 2, 0)
-    x *= 255.
-    x = np.clip(x, 0, 255).astype('uint8')
-    return x
-
-
-def conv_output(model, layer_name, img):
-    """Get the output of conv layer.
-    Args:
-           model: keras model.
-           layer_name: name of layer in the model.
-           img: processed input image.
-
-    Returns:
-           intermediate_output: feature map.
-    """
-    # this is the placeholder for the input images
-    input_img = model.input
-
-    try:
-        # this is the placeholder for the conv output
-        out_conv = model.get_layer(layer_name).output
-    except:
-        raise Exception('Not layer named {}!'.format(layer_name))
-
-    # get the intermediate layer model
-    intermediate_layer_model = Model(inputs=input_img, outputs=out_conv)
-
-    # get the output of intermediate layer model
-    intermediate_output = intermediate_layer_model.predict(img)
-    return intermediate_output[0]
-
-
-def show_intermediate_output(model):
-    # 显示中间层输出
-    image = cv2.imread('test.jpg')
-    image = cv2.resize(image, (width, height))
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    img_ndarray = np.asarray(image, dtype='float64')/255
-    image = np.ndarray.flatten(img_ndarray)
-    test_data = image
-    test_data = test_data.astype('float32')
-
-    if K.image_data_format() == 'channels_first':
-        test_data = test_data.reshape(1, 1, height, width)
-    else:
-        test_data = test_data.reshape(1, height, width, 1)
-    o = conv_output(model, 'conv1', test_data)
-
-    # cv2.imshow('i',image_array)
-    # cv2.imshow('o',o)
 
 
 class LossHistory(keras.callbacks.Callback):
@@ -154,17 +87,17 @@ class LossHistory(keras.callbacks.Callback):
         self.val_acc['batch'].append(logs.get('val_acc'))
 
     def on_epoch_end(self, batch, logs={}):
-        self.losses['epoch'].append(logs.get('loss'))
-        self.accuracy['epoch'].append(logs.get('acc'))
+        self.losses['epoch'].append(logs.get('loss'))  # train loss
+        self.accuracy['epoch'].append(logs.get('acc'))  # train acc
         self.val_loss['epoch'].append(logs.get('val_loss'))
         self.val_acc['epoch'].append(logs.get('val_acc'))
 
     def loss_plot(self, loss_type):
         iters = range(len(self.losses[loss_type]))
         plt.figure(num='Change of parameters')
-        # acc
+        # train acc
         plt.plot(iters, self.accuracy[loss_type], 'r', label='train acc')
-        # loss
+        # train loss
         plt.plot(iters, self.losses[loss_type], 'g', label='train loss')
 
         if loss_type == 'epoch':
@@ -174,7 +107,7 @@ class LossHistory(keras.callbacks.Callback):
             plt.plot(iters, self.val_loss[loss_type], 'k', label='val loss')
 
         plt.title('epoch='+str(epochs)+',lr='+str(lr)+',batch_size='+str(batch_size)+'\nactivation=' +
-                  activation+',nb_classes='+str(nb_classes)+',nb_per_class='+str(number_per_category))
+                  activation+',nb_classes='+str(nb_classes)+',nb_per_class='+str(nb_per_class))
         plt.grid(True)
         plt.xlabel(loss_type)
         plt.ylabel('acc-loss')
@@ -184,8 +117,25 @@ class LossHistory(keras.callbacks.Callback):
         plt.show()
 
 
+def train_model(model, X_train, Y_train, X_val, Y_val):
+    history = LossHistory()
+    tensorboard = keras.callbacks.TensorBoard(
+        log_dir='F:/log/', histogram_freq=1)
+
+    model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs, shuffle=True,
+              verbose=1, validation_data=(X_val, Y_val), callbacks=[history, tensorboard])
+    model.save('model.h5')
+    return model
+
+
+def test_model(X_test, Y_test):
+    model = load_model('model.h5')
+    score = model.evaluate(X_test, Y_test, verbose=0)  # 返回误差值和评估标准值
+    return score
+
+
 def main():
-    (X_train, y_train), (X_val, y_val), (X_test, y_test), category = load_img(path, nb_classes, number_per_category,
+    (X_train, y_train), (X_val, y_val), (X_test, y_test), category = load_img(path, nb_classes, nb_per_class,
                                                                               width, height, depth, train_per_category, valid_per_category, test_per_category)  # 加载图片训练集
 
     if K.image_data_format() == 'channels_first':
@@ -212,6 +162,8 @@ def main():
 
     model = set_model()  # 加载神经网络模型
 
+    plot_model(model, to_file='model.png', show_shapes=True)  # 保存模型结构图
+
     # 生成含有所有类别的txt文件
     with open('classes.txt', 'w') as f:
         for c in category:
@@ -221,26 +173,39 @@ def main():
     model = train_model(model, X_train, Y_train, X_val, Y_val)  # 训练模型
     end = time.clock()
 
+    # 可视化中间层输出、可视化类激活图
+    image = cv2.imread('test.jpg')
+    show_intermediate_output(model, 'conv1', image)
+    image = cv2.imread('test.jpg')
+    show_intermediate_output(model, 'maxpooling1', image)
+    image = cv2.imread('test.jpg')
+    show_intermediate_output(model, 'conv2', image)
+    image = cv2.imread('test.jpg')
+    show_intermediate_output(model, 'maxpooling2', image)
+    image = cv2.imread('test.jpg')
+    show_heatmap(model, 'conv2', image)
+
     score = test_model(X_test, Y_test)  # 评价得分
 
     classes = model.predict_classes(X_test, verbose=0)  # 预测类别
-    test_accuracy = np.mean(np.equal(y_test, classes))
 
-    wrong = 0
+    test_accuracy = np.mean(np.equal(y_test, classes))
+    right = np.sum(np.equal(y_test, classes))
+
     for i in range(0, nb_classes*test_per_category):
         if y_test[i] != classes[i]:
-            wrong = wrong+1
-            category_test = category[int(y_test[i % number_per_category])]
-            category_class = category[int(classes[i % number_per_category])]
+            category_test = category[int(y_test[i % nb_per_class])]
+            category_class = category[int(classes[i % nb_per_class])]
             print(category_test, 'was wrongly classified as', category_class)
 
-    print('Total training time:'+str(end-start)+'s')
-    print('Score:', score)
-    print('Test number:'+str(len(classes)))
-    print('Wrong:'+str(wrong))
-    print('Test accuarcy:', test_accuracy)
-    history = LossHistory()
-    history.loss_plot('epoch')
+    print('Total training time:', end-start)
+    print('Test number:', len(Y_test))
+    print('Test right:', right)
+    print('Test wrong:', len(Y_test)-right)
+    print('Test loss:', score[0])
+    print('Test accuracy:', test_accuracy)
+
+    history.loss_plot('epoch')  # 绘制参数图
 
 
 if __name__ == '__main__':

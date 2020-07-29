@@ -2,7 +2,155 @@ import os
 import cv2  # install
 import numpy as np  # install
 # from PIL import Image  # install
-# import matplotlib.pyplot as plt  # installs
+from keras import backend as K
+from keras.models import Model
+import matplotlib.pyplot as plt  # installs
+
+
+# ----------------neural network visualization----------------
+
+# 输入图像维度
+width, height, depth = 100, 100, 3
+
+
+def deprocess_image(x):
+    if K.image_data_format() == 'channels_first':
+        x = x.transpose(1, 2, 3, 0)
+    elif K.image_data_format() == 'channels_last':
+        x = x.transpose(3, 1, 2, 0)
+    x *= 255
+    x = np.clip(x, 0, 255).astype('uint8')
+    return x
+
+
+def get_intermediate_output(model, layer_name, img):
+    """Get the output of intermediate layer.
+    Args:
+           model: keras model.
+           layer_name: name of layer in the model.
+           img: processed input image.
+    Returns:
+           intermediate_output: feature map.
+    """
+    try:
+        # this is the placeholder for the intermediate output
+        out_intermediate = model.get_layer(layer_name).output
+    except:
+        raise Exception('Not layer named {}!'.format(layer_name))
+
+    # get the intermediate layer model
+    intermediate_layer_model = Model(
+        inputs=model.input, outputs=out_intermediate)
+
+    # get the output of intermediate layer model
+    intermediate_output = intermediate_layer_model.predict(img)
+    return intermediate_output[0]
+
+
+def show_intermediate_output(model, layer_name, image):
+    """show the output of intermediate layer.
+    Args:
+           model: keras model.
+           layer_name: name of layer in the model.
+           image: processed input image.
+    Returns:
+           display_grid: feature maps grid.
+    """
+    if depth == 1:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image = cv2.resize(image, (width, height))
+
+    img_ndarray = np.asarray(image, dtype='float64')/255
+    test_data = np.ndarray.flatten(img_ndarray)
+    test_data = test_data.astype('float32')
+
+    if K.image_data_format() == 'channels_first':
+        test_data = test_data.reshape(1, depth, height, width)
+    else:
+        test_data = test_data.reshape(1, height, width, depth)
+
+    output = get_intermediate_output(model, layer_name, test_data)  # 中间层输出
+    n = output.shape[-1]  # 特征图中特征个数
+    size = output.shape[1]  # 特征图边长
+    display_grid = np.zeros((size*1, n*size))  # 网格
+
+    for i in range(n):
+        channel_image = output[:, :, i]
+        display_grid[0:size, i*size:(i+1)*size] = channel_image
+
+    plt.figure()
+    plt.title(layer_name)
+    plt.grid(False)
+    plt.imshow(display_grid, cmap='viridis')
+    plt.savefig('visualize/'+layer_name+'_output.jpg')  # 保存中间层输出图
+    plt.show()  # must show after imshow
+
+    return display_grid
+
+
+def show_heatmap(model, layer_name, image):
+    """show the heatmap of intermediate layer.
+    Args:
+           model: keras model.
+           layer_name: name of layer in the model.
+           image: processed input image.
+    Returns:
+           heatmap: the heatmap of the trained model.
+           superimposed_img: heatmap apply on input image
+    """
+    img = image.copy()
+    if depth == 1:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    image = cv2.resize(image, (width, height))
+
+    img_ndarray = np.asarray(image, dtype='float64')/255
+    test_data = np.ndarray.flatten(img_ndarray)
+    test_data = test_data.astype('float32')
+
+    if K.image_data_format() == 'channels_first':
+        test_data = test_data.reshape(1, depth, height, width)
+    else:
+        test_data = test_data.reshape(1, height, width, depth)
+
+    preds = model.predict(test_data)
+    index = np.argmax(preds[0])  # 输出类别的索引
+    output = model.output[:, index]
+
+    layer = model.get_layer(layer_name)  # 中间层
+
+    grads = K.gradients(output, layer.output)[0]
+
+    pooled_grads = K.mean(grads, axis=(0, 1, 2))
+    iterate = K.function([model.input], [pooled_grads, layer.output[0]])
+
+    pooled_grads_value, layer_output_value = iterate([test_data])
+
+    for i in range(layer_output_value.shape[-1]):
+        layer_output_value[:, :, i
+                           ] *= pooled_grads_value[i]
+    heatmap = np.mean(layer_output_value, axis=-1)
+
+    # heatmap = np.maximum(heatmap, 0)
+    # heatmap /= np.max(heatmap)
+
+    plt.matshow(heatmap)
+    plt.savefig('visualize/heatmap.jpg')
+    plt.show()
+
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+    heatmap = np.uint8(255*heatmap)  # 转换为rgb格式
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)  # 热力图应用于原始图像
+    superimposed_img = heatmap*0.4+img  # 热力图强度因子0.4
+    cv2.imwrite('visualize/heatmap_apply.jpg', superimposed_img)
+
+    return heatmap, superimposed_img
+
+# -----------------------------------------------------------------------------------
+
+
+# -------------------------------cv algorithms--------------------------------------
 
 
 def face_detect():
@@ -462,9 +610,12 @@ def get_video():
     cap.release()
     cv2.destroyAllWindows()
 
+# -------------------------------------------------------------
+
 
 def main():
-    get_video()
+    # get_video()
+    pass
 
 
 if __name__ == '__main__':
