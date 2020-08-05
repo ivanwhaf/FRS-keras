@@ -6,7 +6,6 @@ from keras import backend as K
 from keras.models import Model
 import matplotlib.pyplot as plt  # installs
 
-
 # ----------------neural network visualization----------------
 
 # 输入图像维度
@@ -58,9 +57,10 @@ def show_intermediate_output(model, layer_name, image):
     """
     if depth == 1:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
     image = cv2.resize(image, (width, height))
 
-    img_ndarray = np.asarray(image, dtype='float64')/255
+    img_ndarray = np.asarray(image, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -72,17 +72,17 @@ def show_intermediate_output(model, layer_name, image):
     output = get_intermediate_output(model, layer_name, test_data)  # 中间层输出
     n = output.shape[-1]  # 特征图中特征个数
     size = output.shape[1]  # 特征图边长
-    display_grid = np.zeros((size*1, n*size))  # 网格
+    display_grid = np.zeros((size * 1, n * size))  # 网格
 
     for i in range(n):
         channel_image = output[:, :, i]
-        display_grid[0:size, i*size:(i+1)*size] = channel_image
+        display_grid[0:size, i * size:(i + 1) * size] = channel_image
 
     plt.figure()
     plt.title(layer_name)
     plt.grid(False)
     plt.imshow(display_grid, cmap='viridis')
-    plt.savefig('visualize/'+layer_name+'_output.jpg')  # 保存中间层输出图
+    plt.savefig('visualize/' + layer_name + '_output.jpg')  # 保存中间层输出图
     plt.show()  # must show after imshow
 
     return display_grid
@@ -104,7 +104,7 @@ def show_heatmap(model, layer_name, image):
 
     image = cv2.resize(image, (width, height))
 
-    img_ndarray = np.asarray(image, dtype='float64')/255
+    img_ndarray = np.asarray(image, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -128,7 +128,7 @@ def show_heatmap(model, layer_name, image):
 
     for i in range(layer_output_value.shape[-1]):
         layer_output_value[:, :, i
-                           ] *= pooled_grads_value[i]
+        ] *= pooled_grads_value[i]
     heatmap = np.mean(layer_output_value, axis=-1)
 
     # heatmap = np.maximum(heatmap, 0)
@@ -140,12 +140,13 @@ def show_heatmap(model, layer_name, image):
 
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
-    heatmap = np.uint8(255*heatmap)  # 转换为rgb格式
+    heatmap = np.uint8(255 * heatmap)  # 转换为rgb格式
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)  # 热力图应用于原始图像
-    superimposed_img = heatmap*0.4+img  # 热力图强度因子0.4
+    superimposed_img = heatmap * 0.4 + img  # 热力图强度因子0.4
     cv2.imwrite('visualize/heatmap_apply.jpg', superimposed_img)
 
     return heatmap, superimposed_img
+
 
 # -----------------------------------------------------------------------------------
 
@@ -160,11 +161,11 @@ def face_detect():
     """
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     cap = cv2.VideoCapture(0)
-    while(True):
+    while (True):
         ret, fram = cap.read()
         faces = face_cascade.detectMultiScale(fram, 1.1, 7)
         for x, y, w, h in faces:
-            cv2.rectangle(fram, (x-5, y-25), (x+w, y+h), (0, 255, 0), 2)
+            cv2.rectangle(fram, (x - 5, y - 25), (x + w, y + h), (0, 255, 0), 2)
             cv2.imshow('fram', fram)
 
 
@@ -195,28 +196,28 @@ def cut_face(path):
                 faces = face_cascade.detectMultiScale(face, 1.1, 7)  # 检测人脸
                 for x, y, w, h in faces[0]:
                     # cv2.rectangle(face,(x-5,y-25),(x+w,y+h),(0,255,0),2)
-                    face = face[y-60:y+h+15, x:x+w]
+                    face = face[y - 60:y + h + 15, x:x + w]
                 cv2.imwrite(img_path, face)  # 用裁剪后的人脸覆盖原图片
-                print(img_path+'--cuting successfully')
+                print(img_path + '--cuting successfully')
     print('all faces cut successfully!')
 
 
-def dHash(img):
+def d_hash(img):
     # 差值hash算法
     img = cv2.resize(img, (9, 8), interpolation=cv2.INTER_AREA)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     hash = ''
     for i in range(8):
         for j in range(8):
-            if img[i, j] > img[i, j+1]:
-                hash = hash+'1'
+            if img[i, j] > img[i, j + 1]:
+                hash = hash + '1'
             else:
-                hash = hash+'0'
-    print("dHash:"+str(hash))
+                hash = hash + '0'
+    print("dHash:" + str(hash))
     return hash
 
 
-def aHash(img):
+def a_hash(img):
     # 均值hash算法
     img = cv2.resize(img, (8, 8))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -224,20 +225,20 @@ def aHash(img):
     average = 0
     for i in range(8):
         for j in range(8):
-            average = average+img[i, j]
-    average = average/64
+            average = average + img[i, j]
+    average = average / 64
 
     for i in range(8):
         for j in range(8):
-            if(img[i, j] > average):
-                hash = hash+'1'
+            if (img[i, j] > average):
+                hash = hash + '1'
             else:
-                hash = hash+'0'
-    print("aHash:"+str(hash))
+                hash = hash + '0'
+    print("aHash:" + str(hash))
     return hash
 
 
-def pHash(img):
+def p_hash(img):
     # 感知hash算法
     img = cv2.resize(img, (32, 32), interpolation=cv2.INTER_AREA)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -250,15 +251,15 @@ def pHash(img):
     for i in range(8):
         for j in range(8):
             mean += vis1[i, j]
-    mean = mean/64
+    mean = mean / 64
 
     for i in range(8):
         for j in range(8):
-            if(vis1[i, j] >= mean):
-                hash = hash+'1'
+            if vis1[i, j] >= mean:
+                hash = hash + '1'
             else:
-                hash = hash+'0'
-    print("pHash:"+str(hash))
+                hash = hash + '0'
+    print("pHash:" + str(hash))
     return hash
 
 
@@ -266,19 +267,21 @@ def hamming_distance(hash1, hash2):
     # 计算两值的汉明距离
     hamming = 0
     for i in range(64):
-        if(hash1[i] != hash2[i]):
-            hamming = hamming+1
+        if hash1[i] != hash2[i]:
+            hamming = hamming + 1
     return hamming
 
 
 def compare_hamming_distance(img1, img2, func):
     # 比较两图的汉明距离
-    if(func == 'aHash'):
-        hamming = hamming_distance(aHash(img1), aHash(img2))
-    elif(func == 'pHash'):
-        hamming = hamming_distance(pHash(img1), pHash(img2))
-    elif(func == 'dHash'):
-        hamming = hamming_distance(dHash(img1), dHash(img2))
+    if func == 'aHash':
+        hamming = hamming_distance(a_hash(img1), a_hash(img2))
+    elif func == 'pHash':
+        hamming = hamming_distance(p_hash(img1), p_hash(img2))
+    elif func == 'dHash':
+        hamming = hamming_distance(d_hash(img1), d_hash(img2))
+    else:
+        return None
     return hamming
 
 
@@ -287,9 +290,9 @@ def blur_test():
     img = cv2.imread('1.jpg')
     img = cv2.resize(img, (800, 1000), interpolation=cv2.INTER_AREA)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gradX = cv2.Sobel(gray, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
-    gradY = cv2.Sobel(gray, ddepth=cv2.CV_32F, dx=0, dy=1, ksize=-1)
-    gradient = cv2.subtract(gradX, gradY)
+    grad_x = cv2.Sobel(gray, ddepth=cv2.CV_32F, dx=1, dy=0, ksize=-1)
+    grad_y = cv2.Sobel(gray, ddepth=cv2.CV_32F, dx=0, dy=1, ksize=-1)
+    gradient = cv2.subtract(grad_x, grad_y)
     gradient = cv2.convertScaleAbs(gradient)
 
     gradient = cv2.blur(gradient, (3, 3))
@@ -300,7 +303,6 @@ def blur_test():
 
 def harris(img):
     # cornerHarris角点检测函数
-
     # img=cv2.imread('6.jpg')
     # img=cv2.resize(img,(800,800),interpolation=cv2.INTER_AREA)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -308,7 +310,7 @@ def harris(img):
     gray = np.float32(gray)
     dst = cv2.cornerHarris(gray, 2, 3, 0.04)
     dst = cv2.dilate(dst, None)
-    img[dst > 0.01*dst.max()] = [0, 0, 255]
+    img[dst > 0.01 * dst.max()] = [0, 0, 255]
     cv2.imshow('harris', img)
     # i=cv2.waitKey(0)
 
@@ -321,7 +323,7 @@ def draw_faces(img):
         'D:/Python36/Lib/site-packages/cv2/data/haarcascade_frontalface_default.xml')
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
     for (x, y, w, h) in faces:
-        img = cv2.rectangle(img, (x, y), (x+w, y+h), (0, 0, 255), 2)
+        img = cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
     cv2.imshow('img', img)
 
 
@@ -350,12 +352,12 @@ def sift_test(img1, img2):
     # bf=cv2.BFMatcher()
     # matches=bf.knnMatch(des1,des2,k=2)
     matches = flann.knnMatch(des1, des2, k=2)
-    print('matches:'+str(len(matches)), end='')
+    print('matches:' + str(len(matches)), end='')
     good = []
     for m, n in matches:
-        if m.distance < 0.7*n.distance:
+        if m.distance < 0.7 * n.distance:
             good.append([m])
-    print('  good:'+str(len(good)))
+    print('  good:' + str(len(good)))
     # img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None, flags=2)
     # img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,None, flags=2)
     # cv2.imshow('img',img3)
@@ -387,12 +389,12 @@ def surf_test_fast(kp1, des1, img1, img2):
     except:
         return
     # matches=flann.knnMatch(des1,des2,k=2)
-    print('matches:'+str(len(matches)), end='')
+    print('matches:' + str(len(matches)), end='')
     good = []
     for m, n in matches:
-        if m.distance < 0.65*n.distance:
+        if m.distance < 0.65 * n.distance:
             good.append([m])
-    print('  good:'+str(len(good)))
+    print('  good:' + str(len(good)))
     # img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None, flags=2)
     img3 = cv2.drawMatchesKnn(img1, kp1, gray2, kp2, good, None, flags=2)
     cv2.imshow('img3', img3)
@@ -427,12 +429,12 @@ def surf_test(img1, img2):
     except:
         return
     # matches=flann.knnMatch(des1,des2,k=2)
-    print('matches:'+str(len(matches)), end='')
+    print('matches:' + str(len(matches)), end='')
     good = []
     for m, n in matches:
-        if m.distance < 0.7*n.distance:
+        if m.distance < 0.7 * n.distance:
             good.append([m])
-    print('  good:'+str(len(good)))
+    print('  good:' + str(len(good)))
     # img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None, flags=2)
     img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
     cv2.imshow('img3', img3)
@@ -460,14 +462,14 @@ def orb_test(img1, img2):
     # index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
     search_params = dict(checks=50)
 
-    index_params = dict(algorithm=FLANN_INDEX_LSH,
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE,
                         table_number=6,  # 12
-                        key_size=12,     # 20
+                        key_size=12,  # 20
                         multi_probe_level=1)  # 2
 
     flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-    #bf=cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+    # bf=cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
     # f=cv2.BFMatcher()
 
     des1 = np.asarray(des1, np.float32)
@@ -479,15 +481,15 @@ def orb_test(img1, img2):
         return
     # matches=bf.match(des1,des2)
     # matches=flann.knnMatch(des1,des2,k=2)
-    print('matches:'+str(len(matches)), end='')
+    print('matches:' + str(len(matches)), end='')
     good = []
     try:
         for m, n in matches:
-            if(m.distance < 0.75*n.distance):
+            if m.distance < 0.75 * n.distance:
                 good.append([m])
     except:
         return
-    print('  good:'+str(len(good)))
+    print('  good:' + str(len(good)))
     # img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,matches,None, flags=2)
     img3 = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good, None, flags=2)
     # img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches,None, flags=2)
@@ -495,14 +497,14 @@ def orb_test(img1, img2):
     # i=cv2.waitKey(0)
 
 
-def get_maxcontour(contours):
+def get_max_contour(contours):
     # 获取最大的轮廓
     max_area = 0
     max_cnt = 0
     for i in range(len(contours)):
         cnt = contours[i]
         area = cv2.contourArea(cnt)
-        if(area > max_area):
+        if area > max_area:
             max_area = area
             max_cnt = cnt
     return max_cnt
@@ -514,7 +516,7 @@ def get_range_contours(contours, low, high):
     for i in range(len(contours)):
         cnt = contours[i]
         area = cv2.contourArea(cnt)
-        if(area > low and area < high):
+        if low < area < high:
             contours_list.append(cnt)
     return contours_list
 
@@ -549,13 +551,13 @@ def draw_contours(img):
         c_max.append(max_contour)
         try:
             cv2.drawContours(img, c_max, -1, (0, 0, 255), 3)
-        except:
+        except Exception as e:
             return
 
         # r1=np.zeros(img.shape[:2],dtype="uint8")#创建黑色图像
         # 将轮廓信息转换成(x, y)坐标，并加上矩形的高度和宽度
         x, y, w, h = cv2.boundingRect(max_contour)
-        cv2.rectangle(img, (x, y), (x+w, y+h), (255, 255, 255), 2)  # 画出矩形
+        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 255), 2)  # 画出矩形
 
         # mask=r1
         # masked=cv2.bitwise_and(img,img,mask=mask)
@@ -590,10 +592,10 @@ def get_video():
 
     # mog2=cv2.createBackgroundSubtractorMOG2()
     # mog2=cv2.bgsegm.createBackgroundSubtractorGMG()
-    while(True):
+    while True:
         # time.sleep(0.034)
         ret, frame = cap.read()
-        if(ret != True):
+        if not ret:
             continue
         # hamming=compare_hamming_distance(img1,frame,'dHash')
         # print(hamming)
@@ -609,6 +611,7 @@ def get_video():
             break
     cap.release()
     cv2.destroyAllWindows()
+
 
 # -------------------------------------------------------------
 

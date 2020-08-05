@@ -31,7 +31,7 @@ def get_class_and_confidence(img, model):
         print('resize error!')
         return -1, -1
     # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-    img_ndarray = np.asarray(img, dtype='float64')/255
+    img_ndarray = np.asarray(img, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -43,7 +43,7 @@ def get_class_and_confidence(img, model):
     preds = model.predict(tesst_data)
     class_ = np.argmax(preds[0], axis=1)
     confidence = float(preds[0][class_])
-    confidence = '%.3f' % (confidence*100)  # 置信度转化为百分比，保留3位小数
+    confidence = '%.3f' % (confidence * 100)  # 置信度转化为百分比，保留3位小数
     return class_, confidence
 
 
@@ -64,13 +64,13 @@ def predict_one_img(img_path):
 
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
-    fontText = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-    draw.text((5, 5), category_name+' %' +
-              str(confidence), (0, 255, 0), font=fontText)
+    font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
+    draw.text((5, 5), category_name + ' %' +
+              str(confidence), (0, 255, 0), font=font_text)
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
     print(category_name, '%', str(confidence))
-    #cv2.namedWindow('img', 0)
+    # cv2.namedWindow('img', 0)
     # cv2.resizeWindow('img',window_width,window_height)
 
     cv2.imshow('img', img)
@@ -78,7 +78,7 @@ def predict_one_img(img_path):
     cv2.destroyAllWindows()
 
 
-class mainFrame(wx.Frame):
+class MainFrame(wx.Frame):
     def __init__(self, title):
         size = window_width, window_height
         wx.Frame.__init__(self, None, title=title,
@@ -110,9 +110,9 @@ class mainFrame(wx.Frame):
         self.Show(True)
 
     def update(self):
-        while(True):
+        while True:
             ret, fram = self.cap.read()
-            if(ret != True):
+            if ret != True:
                 continue
             print(fram.shape)
             fram = cv2.cvtColor(fram, cv2.COLOR_BGR2RGB)
@@ -146,5 +146,5 @@ class mainFrame(wx.Frame):
 
 def main():
     app = wx.App(False)
-    fram = mainFrame('菜品识别系统')
+    frame = MainFrame('菜品识别系统')
     app.MainLoop()

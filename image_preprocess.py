@@ -4,14 +4,14 @@ import random
 import cv2  # install
 import numpy as np  # install
 from PIL import Image  # install
-# import matplotlib.pyplot as plt  # install
 
 
-def load_img(path, nb_classes, nb_per_class, width, height, depth, train_per_category, valid_per_category, test_per_category):
+def load_img(path, nb_classes, nb_per_class, width, height, depth, train_proportion, valid_proportion,
+             test_proportion, normalize=False):
     """加载图片函数
     1.图片文件夹path目录下必须包含以每一类图片为一个文件夹的子文件夹
-    如dataset文件夹下包含c1,c2,c3三个类别的子文件夹
-    每个子文件夹包含相应图片,如c1文件夹下包含1.jpg,2.jpg
+    如data文件夹下包含c1,c2,c3三个类别的子文件夹
+    每个子文件夹包含相应类别的图片,如c1文件夹下包含1.jpg,2.jpg
     2.文件夹路径名及所有文件名必须是英文
     Args:
         path:图片文件夹路径
@@ -20,9 +20,9 @@ def load_img(path, nb_classes, nb_per_class, width, height, depth, train_per_cat
         width:图片宽
         height:图片高
         depth:读取的图片深度
-        train_per_category:每类训练图片数量
-        valid_pers_category:每类验证图片数量
-        test_per_category:每类测试图片数量
+        train_proportion:训练集比例
+        valid_proportion:验证集比例
+        test_proportion:测试训练集比例
         normalize:图片是否需要归一化处理,默认不需要
     Returns:
         rval包含3个元组和一个类别列表
@@ -31,33 +31,37 @@ def load_img(path, nb_classes, nb_per_class, width, height, depth, train_per_cat
            (test_data, test_label):测试数据和标签
            category:类别列表
     """
-    number = nb_classes*nb_per_class  # 图片总数
+    train_per_class = int(train_proportion * nb_per_class)
+    valid_per_class = int(valid_proportion * nb_per_class)
+    test_per_class = int(test_proportion * nb_per_class)
+    number = nb_classes * nb_per_class  # 图片总数
     n = 0  # images[]数组下标
     category = []  # 图片类别列表
-    images = np.empty((number, width*height*depth))  # 图片集
+    images = np.empty((number, width * height * depth))  # 图片集
 
-    img_categories = os.listdir(path)
     print('Image categories:')
-    for c, img_category in enumerate(img_categories):
+    img_classes = os.listdir(path)
+    for c, img_class in enumerate(img_classes):
         # 若读取的图片类别足够，停止加载数据集
         if c >= nb_classes:
             break
+        img_class_path = os.path.join(path, img_class)
         # 若不为文件夹，跳过
-        img_category_path = os.path.join(path, img_category)  # 每一类图片的路径
-        if not os.path.isdir(img_category_path):
+        if not os.path.isdir(img_class_path):
             continue
 
-        print('<', img_category, '>')
-        category.append(img_category)
+        print('<', img_class, '>')
+        category.append(img_class)
 
-        imgs = os.listdir(img_category_path)
         im = []  # 暂存每类的图片，最后打乱后加入images数组
         m = 0  # 每类已经成功读取的图片数量
+
+        imgs = os.listdir(img_class_path)
         for img in imgs:
             # 每类已经读取的图片数量若大于设定的每类图片数量，停止加载数据集
             if m >= nb_per_class:
                 break
-            img_path = os.path.join(img_category_path, img)
+            img_path = os.path.join(img_class_path, img)
             if depth == 3:
                 # image=cv2.imread(img_path,cv2.IMREAD_COLOR)
                 # image=Image.open(img_path)
@@ -77,52 +81,52 @@ def load_img(path, nb_classes, nb_per_class, width, height, depth, train_per_cat
                 # print(img_path+' has been deleted.')
                 continue
 
-            image_ndarray = np.asarray(image, dtype='float64')/255
+            image_ndarray = np.asarray(image, dtype='float64') / 255
             im.append(np.ndarray.flatten(image_ndarray))
             # images[n]=np.ndarray.flatten(image_ndarray)
-            n = n+1
-            m = m+1
+            n = n + 1
+            m = m + 1
 
         # 每类的图片数量不足
-        if((m+1) < nb_per_class):
+        if (m + 1) < nb_per_class:
             print('Image number unequal!', m)
             exit()
 
         random.shuffle(im)  # 随机打乱每类图像
         # 添加到总的images数组里
-        for i in range(n-nb_per_class, n):
+        for i in range(n - nb_per_class, n):
             images[i] = im[i % nb_per_class]
 
     label = np.empty(number)  # 标签数组
     for i in range(nb_classes):
-        label[i*nb_per_class:(i+1)*nb_per_class] = i
+        label[i * nb_per_class:(i + 1) * nb_per_class] = i
     label = label.astype(np.int)
 
-    train_data_number = train_per_category*nb_classes
-    valid_data_number = valid_per_category*nb_classes
-    test_data_number = test_per_category*nb_classes
+    train_data_number = train_per_class * nb_classes
+    valid_data_number = valid_per_class * nb_classes
+    test_data_number = test_per_class * nb_classes
 
-    train_data = np.empty((train_data_number, width*height*depth))
+    train_data = np.empty((train_data_number, width * height * depth))
     train_label = np.empty(train_data_number)
-    valid_data = np.empty((valid_data_number, width*height*depth))
+    valid_data = np.empty((valid_data_number, width * height * depth))
     valid_label = np.empty(valid_data_number)
-    test_data = np.empty((test_data_number, width*height*depth))
+    test_data = np.empty((test_data_number, width * height * depth))
     test_label = np.empty(test_data_number)
 
     # 遍历每一个类别，构造数据集和标签数组
     for i in range(nb_classes):
-        train_data[i*train_per_category: (i+1)*train_per_category] = images[i *
-                                                                            nb_per_class: i*nb_per_class+train_per_category]  # 训练集数据
-        train_label[i*train_per_category: (i+1)*train_per_category] = label[i *
-                                                                            nb_per_class: i*nb_per_class+train_per_category]  # 训练集标签
-        valid_data[i*valid_per_category: (i+1)*valid_per_category] = images[i*nb_per_class +
-                                                                            train_per_category: i*nb_per_class+train_per_category+valid_per_category]  # 验证集数据
-        valid_label[i*valid_per_category: (i+1)*valid_per_category] = label[i*nb_per_class +
-                                                                            train_per_category: i*nb_per_class+train_per_category+valid_per_category]  # 验证集标签
-        test_data[i*test_per_category: (i+1)*test_per_category] = images[i*nb_per_class+train_per_category +
-                                                                         valid_per_category: i*nb_per_class+train_per_category+valid_per_category+test_per_category]  # 测试集数据
-        test_label[i*test_per_category: (i+1)*test_per_category] = label[i*nb_per_class+train_per_category +
-                                                                         valid_per_category: i*nb_per_class+train_per_category+valid_per_category+test_per_category]   # 测试集标签
+        train_data[i * train_per_class: (i + 1) * train_per_class] = images[i *
+                                                                                  nb_per_class: i * nb_per_class + train_per_class]  # 训练集数据
+        train_label[i * train_per_class: (i + 1) * train_per_class] = label[i *
+                                                                                  nb_per_class: i * nb_per_class + train_per_class]  # 训练集标签
+        valid_data[i * valid_per_class: (i + 1) * valid_per_class] = images[i * nb_per_class +
+                                                                                  train_per_class: i * nb_per_class + train_per_class + valid_per_class]  # 验证集数据
+        valid_label[i * valid_per_class: (i + 1) * valid_per_class] = label[i * nb_per_class +
+                                                                                  train_per_class: i * nb_per_class + train_per_class + valid_per_class]  # 验证集标签
+        test_data[i * test_per_class: (i + 1) * test_per_class] = images[i * nb_per_class + train_per_class +
+                                                                               valid_per_class: i * nb_per_class + train_per_class + valid_per_class + test_per_class]  # 测试集数据
+        test_label[i * test_per_class: (i + 1) * test_per_class] = label[i * nb_per_class + train_per_class +
+                                                                               valid_per_class: i * nb_per_class + train_per_class + valid_per_class + test_per_class]  # 测试集标签
 
     # print('train_label:',train_label)
     # print('valid_label:',valid_label)
@@ -167,9 +171,9 @@ def img_normalize(path, width, height):
                     image = cv2.resize(image, (width, height),
                                        interpolation=cv2.INTER_CUBIC)  # 调整图片大小
                 except:
-                    print(img_path+' resize error!')
+                    print(img_path + ' resize error!')
                     os.remove(img_path)
-                    print(img_path+' has been deleted.')
+                    print(img_path + ' has been deleted.')
                     continue
                 # convert to gray
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # 转换为灰度图
@@ -194,10 +198,10 @@ def img_rename(path):
         imgs = os.listdir(category_path)
         for img in imgs:
             img_path = os.path.join(category_path, img)
-            new_img_path = os.path.join(category_path, 'p'+str(number)+'.jpg')
+            new_img_path = os.path.join(category_path, 'p' + str(number) + '.jpg')
             os.rename(img_path, new_img_path)
-            print(img_path+'----->'+new_img_path)
-            number = number+1
+            print(img_path + '----->' + new_img_path)
+            number = number + 1
     print('All images renamed successfully!')
 
 

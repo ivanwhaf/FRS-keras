@@ -2,17 +2,15 @@ import os
 import time
 import cv2  # install
 import numpy as np  # install
-# from PIL import Image  # install
 import keras  # install
-from keras.regularizers import l1, l2
+from keras.regularizers import l2
 from keras import backend as K
-from keras.models import Model
 from keras.utils import np_utils
 from keras.utils import plot_model
 from keras.optimizers import SGD
 from keras.models import Sequential
 from keras.models import load_model
-from keras.layers import Conv2D, MaxPooling2D, SeparableConv2D
+from keras.layers import MaxPooling2D, SeparableConv2D
 from keras.layers import Dense, Dropout, Activation, Flatten
 import matplotlib.pyplot as plt  # install
 from image_preprocess import load_img
@@ -20,7 +18,7 @@ from image_util import show_intermediate_output, show_heatmap
 
 np.random.seed(1337)
 os.environ["PATH"] += os.pathsep + \
-    'C:/Program Files (x86)/Graphviz2.38/bin'  # 添加graphviz至环境变量 用于输出网络结构图
+                      'C:/Program Files (x86)/Graphviz2.38/bin'  # 添加graphviz至环境变量 用于输出网络结构图
 
 path = 'data'  # 数据集路径
 epochs = 3000  # 轮数
@@ -31,9 +29,9 @@ lr = 0.0002  # 学习率
 activation = 'relu'  # 激活函数
 width, height, depth = 100, 100, 3  # 图片的宽、高、深度
 nb_filters1, nb_filters2 = 5, 10  # 卷积核的数目（即输出的维度）
-train_per_category = int(nb_per_class*0.8)  # 每个类别训练数量
-valid_per_category = int(nb_per_class*0.1)  # 每个类别验证数量
-test_per_category = int(nb_per_class*0.1)  # 每个类别测试数量
+train_proportion = 0.8  # 训练集比例
+valid_proportion = 0.1  # 验证集比例
+test_proportion = 0.1  # 测试集比例
 
 
 def set_model(lr=lr, decay=1e-6, momentum=0.9):
@@ -106,21 +104,23 @@ class LossHistory(keras.callbacks.Callback):
             # val_loss
             plt.plot(iters, self.val_loss[loss_type], 'k', label='val loss')
 
-        plt.title('epoch='+str(epochs)+',lr='+str(lr)+',batch_size='+str(batch_size)+'\nactivation=' +
-                  activation+',nb_classes='+str(nb_classes)+',nb_per_class='+str(nb_per_class))
+        plt.title('epoch=' + str(epochs) + ',lr=' + str(lr) + ',batch_size=' + str(batch_size) + '\nactivation=' +
+                  activation + ',nb_classes=' + str(nb_classes) + ',nb_per_class=' + str(nb_per_class))
         plt.grid(True)
         plt.xlabel(loss_type)
         plt.ylabel('acc-loss')
         plt.legend(loc="upper right")
         now = time.strftime('%Y-%m-%d@%H-%M-%S', time.localtime(time.time()))
-        plt.savefig('./parameter/'+now+'.jpg')
+        plt.savefig('./parameter/' + now + '.jpg')
         plt.show()
 
 
+history = LossHistory()
+
+
 def train_model(model, X_train, Y_train, X_val, Y_val):
-    history = LossHistory()
     tensorboard = keras.callbacks.TensorBoard(
-        log_dir='F:/log/', histogram_freq=1)
+        log_dir='F:/Log/', histogram_freq=1)
 
     model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs, shuffle=True,
               verbose=1, validation_data=(X_val, Y_val), callbacks=[history, tensorboard])
@@ -136,18 +136,18 @@ def test_model(X_test, Y_test):
 
 def main():
     (X_train, y_train), (X_val, y_val), (X_test, y_test), category = load_img(path, nb_classes, nb_per_class,
-                                                                              width, height, depth, train_per_category, valid_per_category, test_per_category)  # 加载图片训练集
+                                                                              width, height, depth, train_proportion,
+                                                                              valid_proportion,
+                                                                              test_proportion)  # 加载图片训练集
 
     if K.image_data_format() == 'channels_first':
         X_train = X_train.reshape(X_train.shape[0], depth, height, width)
         X_val = X_val.reshape(X_val.shape[0], depth, height, width)
         X_test = X_test.reshape(X_test.shape[0], depth, height, width)
-        input_shape = (depth, height, width)
     else:
         X_train = X_train.reshape(X_train.shape[0], height, width, depth)
         X_val = X_val.reshape(X_val.shape[0], height, width, depth)
         X_test = X_test.reshape(X_test.shape[0], height, width, depth)
-        input_shape = (height, width, depth)
 
     print('X_train shape:', X_train.shape)
     print('Class number:', nb_classes)
@@ -167,7 +167,7 @@ def main():
     # 生成含有所有类别的txt文件
     with open('classes.txt', 'w') as f:
         for c in category:
-            f.write(c+'\n')
+            f.write(c + '\n')
 
     start = time.clock()
     model = train_model(model, X_train, Y_train, X_val, Y_val)  # 训练模型
@@ -192,16 +192,16 @@ def main():
     test_accuracy = np.mean(np.equal(y_test, classes))
     right = np.sum(np.equal(y_test, classes))
 
-    for i in range(0, nb_classes*test_per_category):
+    for i in range(0, nb_classes * int(test_proportion * nb_per_class)):
         if y_test[i] != classes[i]:
             category_test = category[int(y_test[i % nb_per_class])]
             category_class = category[int(classes[i % nb_per_class])]
             print(category_test, 'was wrongly classified as', category_class)
 
-    print('Total training time:', end-start)
+    print('Total training time:', end - start)
     print('Test number:', len(Y_test))
     print('Test right:', right)
-    print('Test wrong:', len(Y_test)-right)
+    print('Test wrong:', len(Y_test) - right)
     print('Test loss:', score[0])
     print('Test accuracy:', test_accuracy)
 

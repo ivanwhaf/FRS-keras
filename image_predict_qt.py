@@ -34,7 +34,7 @@ def get_class_and_confidence(img, model):
     except:
         print('resize error!')
         return -1, -1
-    img_ndarray = np.asarray(img, dtype='float64')/255
+    img_ndarray = np.asarray(img, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -46,7 +46,7 @@ def get_class_and_confidence(img, model):
     preds = model.predict(test_data)
     class_ = np.argmax(preds[0], axis=1)
     confidence = float(preds[0][class_])
-    confidence = '%.3f' % (confidence*100)  # 置信度转化为百分比，保留3位小数
+    confidence = '%.3f' % (confidence * 100)  # 置信度转化为百分比，保留3位小数
     return class_, confidence
 
 
@@ -67,9 +67,9 @@ def predict_one_img(img_path):
 
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
-    fontText = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-    draw.text((5, 5), category_name+' %' +
-              str(confidence), (0, 255, 0), font=fontText)
+    font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
+    draw.text((5, 5), category_name + ' %' +
+              str(confidence), (0, 255, 0), font=font_text)
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
     print(category_name, '%', str(confidence))
@@ -81,24 +81,24 @@ def predict_one_img(img_path):
     cv2.destroyAllWindows()
 
 
-class my(QMainWindow):
+class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setGeometry(500, 300, cam_width, cam_height+150)
-        self.setFixedSize(cam_width, cam_height+150)
+        self.setGeometry(500, 300, cam_width, cam_height + 150)
+        self.setFixedSize(cam_width, cam_height + 150)
         self.setWindowTitle('菜品识别系统')
 
         self.img_label = QLabel(self)
         self.img_label.setGeometry(0, 0, cam_width, cam_height)
 
         self.dish_label = QLabel(self)
-        self.dish_label.move(70, cam_height+25)
+        self.dish_label.move(70, cam_height + 25)
         self.dish_label.resize(250, 25)
         self.dish_label.setText("菜品名称：")
         self.dish_label.setFont(QFont("Roman times", 18, QFont.Bold))
 
         self.price_label = QLabel(self)
-        self.price_label.move(70, cam_height+70)
+        self.price_label.move(70, cam_height + 70)
         self.price_label.resize(250, 25)
         self.price_label.setText("金额：")
         self.price_label.setFont(QFont("Roman times", 18, QFont.Bold))
@@ -106,13 +106,13 @@ class my(QMainWindow):
         self.isChecking = False
 
         check_button = QPushButton("结算", self)
-        check_button.move(450, cam_height+50)
+        check_button.move(450, cam_height + 50)
         check_button.resize(130, 40)
         # check_button.clicked.connect(self.predict_one)
         check_button.clicked.connect(self.check)
 
         ok_button = QPushButton("确定", self)
-        ok_button.move(600, cam_height+50)
+        ok_button.move(600, cam_height + 50)
         ok_button.resize(130, 40)
         ok_button.clicked.connect(self.ok)
 
@@ -136,7 +136,7 @@ class my(QMainWindow):
         print(self.price)
 
         self.model = load_model('model.h5')
-        print('model loding complete..')
+        print('Model loading complete!')
 
         self.cap = cv2.VideoCapture(0)
         self.cap.set(3, cam_width)
@@ -159,9 +159,9 @@ class my(QMainWindow):
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(img)
         draw = ImageDraw.Draw(img)
-        fontText = ImageFont.truetype("yy.ttf", 30, encoding="utf-8")
-        draw.text((5, 5), category_name+str(confidence) +
-                  '%', (0, 255, 0), font=fontText)
+        font_text = ImageFont.truetype("yy.ttf", 30, encoding="utf-8")
+        draw.text((5, 5), category_name + str(confidence) +
+                  '%', (0, 255, 0), font=font_text)
         img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -172,8 +172,8 @@ class my(QMainWindow):
         img = QPixmap.fromImage(img)
         self.check_pixmap = img
         self.isChecking = True
-        self.dish_label.setText("菜品名称："+category_name)
-        self.price_label.setText("金额："+self.price[category_name]+"元")
+        self.dish_label.setText("菜品名称：" + category_name)
+        self.price_label.setText("金额：" + self.price[category_name] + "元")
         self.img_label.setPixmap(img)
         self.img_label.setScaledContents(True)  # 自适应大小
 
@@ -204,9 +204,9 @@ class my(QMainWindow):
         img = Image.fromarray(img)
 
         draw = ImageDraw.Draw(img)
-        fontText = ImageFont.truetype("yy.ttf", 30, encoding="utf-8")
-        draw.text((5, 5), category_name+' %' +
-                  str(confidence), (0, 255, 0), font=fontText)
+        font_text = ImageFont.truetype("yy.ttf", 30, encoding="utf-8")
+        draw.text((5, 5), category_name + ' %' +
+                  str(confidence), (0, 255, 0), font=font_text)
 
         img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -218,8 +218,8 @@ class my(QMainWindow):
         img = QPixmap.fromImage(img)
         self.check_pixmap = img
         self.isChecking = True
-        self.dish_label.setText("菜品名称："+category_name)
-        self.price_label.setText("金额："+self.price[category_name]+"元")
+        self.dish_label.setText("菜品名称：" + category_name)
+        self.price_label.setText("金额：" + self.price[category_name] + "元")
 
     def ok(self):
         self.isChecking = False
@@ -241,9 +241,9 @@ def cv_loop():
     cap = cv2.VideoCapture(0)
     cap.set(3, cam_width)
     cap.set(4, cam_height)
-    while(True):
+    while True:
         ret, fram = cap.read()
-        if(ret != True):
+        if not ret:
             continue
         print(fram.shape)
         class_, confidence = get_class_and_confidence(fram, model)
@@ -253,9 +253,9 @@ def cv_loop():
 
         img = Image.fromarray(cv2.cvtColor(fram, cv2.COLOR_BGR2RGB))
         draw = ImageDraw.Draw(img)
-        fontText = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-        draw.text((5, 5), category_name+' %' +
-                  str(confidence), (0, 255, 0), font=fontText)
+        font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
+        draw.text((5, 5), category_name + ' %' +
+                  str(confidence), (0, 255, 0), font=font_text)
         fram = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         # cv2.putText(fram, category_name+' %'+str(confidence), (0,70), cv2.FONT_HERSHEY_COMPLEX, 3, (0, 255, 0), 6)
 
@@ -272,7 +272,7 @@ def cv_loop():
 
 def main():
     app = QApplication(sys.argv)
-    my = my()
+    my = MyWindow()
     sys.exit(app.exec_())
 
 
