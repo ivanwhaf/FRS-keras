@@ -1,10 +1,9 @@
-import os
+# @Author: Ivan
+# @LastEdit: 2020/8/6
 import threading
 import cv2  # install
-import keras  # install
 from keras.models import load_model
 from keras import backend as K
-import h5py  # install
 import numpy as np  # install
 from PIL import Image, ImageDraw, ImageFont  # install
 import wx  # install
@@ -40,7 +39,7 @@ def get_class_and_confidence(img, model):
     else:
         test_data = test_data.reshape(1, height, width, depth)
 
-    preds = model.predict(tesst_data)
+    preds = model.predict(test_data)
     class_ = np.argmax(preds[0], axis=1)
     confidence = float(preds[0][class_])
     confidence = '%.3f' % (confidence * 100)  # 置信度转化为百分比，保留3位小数
@@ -49,27 +48,27 @@ def get_class_and_confidence(img, model):
 
 def predict_one_img(img_path):
     # 预测单张图片
-    category = []
+    classes = []
     with open('classes.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             class_ = line[:-1]
             print(class_)
-            category.append(class_)
+            classes.append(class_)
 
     model = load_model('model.h5')
     img = cv2.imread(img_path)
     class_, confidence = get_class_and_confidence(img, model)
-    category_name = category[int(class_)]
+    class_name = classes[int(class_)]
 
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
     font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-    draw.text((5, 5), category_name + ' %' +
+    draw.text((5, 5), class_name + ' %' +
               str(confidence), (0, 255, 0), font=font_text)
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
-    print(category_name, '%', str(confidence))
+    print(class_name, '%', str(confidence))
     # cv2.namedWindow('img', 0)
     # cv2.resizeWindow('img',window_width,window_height)
 
@@ -112,7 +111,7 @@ class MainFrame(wx.Frame):
     def update(self):
         while True:
             ret, fram = self.cap.read()
-            if ret != True:
+            if not ret:
                 continue
             print(fram.shape)
             fram = cv2.cvtColor(fram, cv2.COLOR_BGR2RGB)

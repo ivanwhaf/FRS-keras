@@ -1,3 +1,5 @@
+# @Author: Ivan
+# @LastEdit: 2020/8/6
 import os
 from urllib import parse
 import requests  # install
@@ -7,7 +9,8 @@ from bs4 import BeautifulSoup as bs  # install
 douguo_api = 'https://www.douguo.com/search/recipe/'
 keyword_list = ['鱼香茄子']
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36'}
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/72.0.3626.109 Safari/537.36'}
 path = '../raw_data/douguo'
 page = 10  # 要下载的页数，每页最多20张图片
 

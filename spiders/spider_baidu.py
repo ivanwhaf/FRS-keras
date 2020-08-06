@@ -1,3 +1,5 @@
+# @Author: Ivan
+# @LastEdit: 2020/8/6
 import os
 import json
 import urllib
@@ -7,12 +9,13 @@ width, height = '', ''
 page = 6  # 需要下载的页数
 rn = 50  # 每一页数量
 
-
 keyword_list = ['鱼香茄子']
 path = '../raw_data/baidu'
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36',
-           'Referer': 'https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=&sf=1&fmq=1551240778642_R\
-		&pv=&ic=&nc=1&z=&hd=&latest=&copyright=&se=1&showtab=0&fb=0&width=&height=&face=0&istype=2&ie=utf-8&word=%E8%A5%BF%E7%BA%A2%E6%9F%BF%E7%82%92%E9%B8%A1%E8%9B%8B'}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36',
+    'Referer': 'https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=&sf=1&fmq=1551240778642_R\
+		&pv=&ic=&nc=1&z=&hd=&latest=&copyright=&se=1&showtab=0&fb=0&width=&height=&face=0&istype=2&ie=utf-8&word=%E8%A5%BF%E7%BA%A2%E6%9F%BF%E7%82%92%E9%B8%A1%E8%9B%8B'
+}
 '''
 http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&query
 	Word=%E8%A5%BF%E7%BA%A2%E6%9F%BF%E7%82%92%E9%B8%A1%E8%9B%8B&cl=2&lm=-1&ie=utf-8&oe=utf-8&adpicid=
@@ -23,18 +26,18 @@ http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&f
 
 def download(lis, path, keyword):
     number = 1
-    c_path = path+'\\'+keyword
+    c_path = path + '\\' + keyword
     if not os.path.exists(path):
         os.makedirs(path)  # must makedirs here!
     if not os.path.exists(c_path):
         os.mkdir(c_path)
     for url in lis:
         r = requests.get(url, headers=headers, stream=True)
-        with open(c_path+'\\'+str(number)+'.jpg', 'wb') as f:
+        with open(c_path + '\\' + str(number) + '.jpg', 'wb') as f:
             for chunk in r.iter_content(chunk_size=32):
                 f.write(chunk)
-        print(keyword, number, url, downloaded!')
-        number = number+1
+        print(keyword, number, url, 'downloaded!')
+        number = number + 1
     print('Downloading successfully!')
 
 
@@ -43,16 +46,16 @@ def download_all(keyword):
     k = urllib.parse.quote(keyword)  # 关键字转码
     lis = []
     for i in range(page):
-        pn = i*rn
-        url = 'http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&queryWord='\
-            + str(k)+'&cl=2&lm=-1&ie=utf-8&oe=utf-8&adpicid=&st=&z=&ic=&hd=&latest=&copyright=&word='\
-            + str(k)+'&s=&se=&tab=&width='+str(width)+'&height='+str(height) + \
-            '&face=&istype=&qc=&nc=1&fr=&expermode=&force=&pn=' + \
-            str(pn)+'&rn='+str(rn)
+        pn = i * rn
+        url = 'http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&queryWord=' \
+              + str(k) + '&cl=2&lm=-1&ie=utf-8&oe=utf-8&adpicid=&st=&z=&ic=&hd=&latest=&copyright=&word=' \
+              + str(k) + '&s=&se=&tab=&width=' + str(width) + '&height=' + str(height) + \
+              '&face=&istype=&qc=&nc=1&fr=&expermode=&force=&pn=' + \
+              str(pn) + '&rn=' + str(rn)
 
         Referer = 'https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=\
 		&sf=1&fmq=1551240778642_R&pv=&ic=&nc=1&z=&hd=&latest=&copyright=&se=1&showtab=0&fb=0&width=&height=&face=0&istype\
-		=2&ie=utf-8&word='+str(k)
+		=2&ie=utf-8&word=' + str(k)
         headers['Referer'] = Referer
 
         r = requests.get(url, headers=headers)
@@ -64,11 +67,11 @@ def download_all(keyword):
         data = j['data']
         for d in data:
             try:
-                thumbURL = d['thumbURL']  # 找到图片url
-                #print(thumbURL+' '+str(number))
-                lis.append(thumbURL)  # 将图片url添加到lis列表
-                print(thumbURL+' '+str(number))
-                number = number+1
+                thumb_url = d['thumbURL']  # 找到图片url
+                # print(thumbURL+' '+str(number))
+                lis.append(thumb_url)  # 将图片url添加到lis列表
+                print(thumb_url + ' ' + str(number))
+                number = number + 1
             except:
                 print('find thumbURL error!')
                 continue
@@ -80,4 +83,5 @@ def main():
         download_all(k)
 
 
-main()
+if __name__ == '__main__':
+    main()

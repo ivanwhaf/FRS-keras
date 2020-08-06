@@ -1,3 +1,5 @@
+# @Author: Ivan
+# @LastEdit: 2020/8/6
 import os
 import time
 import cv2  # install
@@ -21,11 +23,11 @@ os.environ["PATH"] += os.pathsep + \
                       'C:/Program Files (x86)/Graphviz2.38/bin'  # 添加graphviz至环境变量 用于输出网络结构图
 
 path = 'data'  # 数据集路径
-epochs = 3000  # 轮数
+epochs = 2000  # 轮数
 nb_classes = 5  # 图片种类
 nb_per_class = 200  # 每类图片数量
 batch_size = 64  # 一次训练的样本数
-lr = 0.0002  # 学习率
+lr = 0.0001  # 学习率
 activation = 'relu'  # 激活函数
 width, height, depth = 100, 100, 3  # 图片的宽、高、深度
 nb_filters1, nb_filters2 = 5, 10  # 卷积核的数目（即输出的维度）
@@ -119,11 +121,11 @@ history = LossHistory()
 
 
 def train_model(model, X_train, Y_train, X_val, Y_val):
-    tensorboard = keras.callbacks.TensorBoard(
-        log_dir='F:/Log/', histogram_freq=1)
+    # tensorboard = keras.callbacks.TensorBoard(
+    #     log_dir='F:/Log/', histogram_freq=1)
 
     model.fit(X_train, Y_train, batch_size=batch_size, epochs=epochs, shuffle=True,
-              verbose=1, validation_data=(X_val, Y_val), callbacks=[history, tensorboard])
+              verbose=1, validation_data=(X_val, Y_val), callbacks=[history])
     model.save('model.h5')
     return model
 
@@ -135,10 +137,10 @@ def test_model(X_test, Y_test):
 
 
 def main():
-    (X_train, y_train), (X_val, y_val), (X_test, y_test), category = load_img(path, nb_classes, nb_per_class,
-                                                                              width, height, depth, train_proportion,
-                                                                              valid_proportion,
-                                                                              test_proportion)  # 加载图片训练集
+    (X_train, y_train), (X_val, y_val), (X_test, y_test), classes = load_img(path, nb_classes, nb_per_class,
+                                                                             width, height, depth, train_proportion,
+                                                                             valid_proportion,
+                                                                             test_proportion)  # 加载图片训练集
 
     if K.image_data_format() == 'channels_first':
         X_train = X_train.reshape(X_train.shape[0], depth, height, width)
@@ -164,10 +166,10 @@ def main():
 
     plot_model(model, to_file='model.png', show_shapes=True)  # 保存模型结构图
 
-    # 生成含有所有类别的txt文件
+    # 将所有类别写入txt文件
     with open('classes.txt', 'w') as f:
-        for c in category:
-            f.write(c + '\n')
+        for class_ in classes:
+            f.write(class_ + '\n')
 
     start = time.clock()
     model = train_model(model, X_train, Y_train, X_val, Y_val)  # 训练模型
@@ -187,24 +189,22 @@ def main():
 
     score = test_model(X_test, Y_test)  # 评价得分
 
-    classes = model.predict_classes(X_test, verbose=0)  # 预测类别
+    pred_classes = model.predict_classes(X_test, verbose=0)  # 预测类别
 
-    test_accuracy = np.mean(np.equal(y_test, classes))
-    right = np.sum(np.equal(y_test, classes))
-
+    # test_accuracy = np.mean(np.equal(y_test, pred_classes))
+    right = np.sum(np.equal(y_test, pred_classes))
     for i in range(0, nb_classes * int(test_proportion * nb_per_class)):
-        if y_test[i] != classes[i]:
-            category_test = category[int(y_test[i % nb_per_class])]
-            category_class = category[int(classes[i % nb_per_class])]
-            print(category_test, 'was wrongly classified as', category_class)
+        if y_test[i] != pred_classes[i]:
+            actual_class_name = classes[int(y_test[i % nb_per_class])]
+            pred_class_name = classes[int(pred_classes[i % nb_per_class])]
+            print(actual_class_name, 'was wrongly classified as', pred_class_name)
 
     print('Total training time:', end - start)
     print('Test number:', len(Y_test))
     print('Test right:', right)
     print('Test wrong:', len(Y_test) - right)
     print('Test loss:', score[0])
-    print('Test accuracy:', test_accuracy)
-
+    print('Test accuracy:', score[1])
     history.loss_plot('epoch')  # 绘制参数图
 
 

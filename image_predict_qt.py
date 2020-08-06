@@ -1,11 +1,9 @@
-import os
+# @Author: Ivan
+# @LastEdit: 2020/8/6
 import sys
-import threading
 import cv2  # install
-import keras  # install
 from keras.models import load_model
 from keras import backend as K
-import h5py  # install
 import numpy as np  # install
 from PIL import Image, ImageDraw, ImageFont  # install
 from PyQt5.QtWidgets import QWidget, QPushButton, QApplication, QLabel, QMainWindow  # install
@@ -15,7 +13,7 @@ from PyQt5.QtCore import Qt, QTimer
 np.random.seed(1337)
 
 # 图像高宽
-width, height, depth = 200, 200, 3
+width, height, depth = 100, 100, 3
 
 # 摄像头高宽
 cam_width, cam_height = 800, 600
@@ -25,10 +23,16 @@ window_width, window_height = 1600, 1200
 
 
 def get_class_and_confidence(img, model):
-    # 根据训练好的模型获取预测的类别和置信度
-    # test_data = np.empty((1, width*height*3))
+    """根据训练好的模型获取预测的类别和置信度
+    Args:
+        img: 要预测的图片
+        model: 训练好的keras模型
+    Returns:
+        class_: 预测的类别索引
+        confidence: 该类别的置信度
+    """
     if depth == 1:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     try:
         img = cv2.resize(img, (width, height))
     except:
@@ -44,7 +48,7 @@ def get_class_and_confidence(img, model):
         test_data = test_data.reshape(1, height, width, depth)
 
     preds = model.predict(test_data)
-    class_ = np.argmax(preds[0], axis=1)
+    class_ = np.argmax(preds[0])
     confidence = float(preds[0][class_])
     confidence = '%.3f' % (confidence * 100)  # 置信度转化为百分比，保留3位小数
     return class_, confidence
@@ -73,6 +77,7 @@ def predict_one_img(img_path):
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
     print(category_name, '%', str(confidence))
+
     # cv2.namedWindow('img', 0)
     # cv2.resizeWindow('img',window_width,window_height)
 
@@ -82,6 +87,10 @@ def predict_one_img(img_path):
 
 
 class MyWindow(QMainWindow):
+    """
+    自定义Qt窗口
+    """
+
     def __init__(self):
         super().__init__()
         self.setGeometry(500, 300, cam_width, cam_height + 150)
@@ -104,36 +113,38 @@ class MyWindow(QMainWindow):
         self.price_label.setFont(QFont("Roman times", 18, QFont.Bold))
 
         self.isChecking = False
+        self.check_pixmap = None
+        self.fram = None
 
         check_button = QPushButton("结算", self)
         check_button.move(450, cam_height + 50)
         check_button.resize(130, 40)
-        # check_button.clicked.connect(self.predict_one)
-        check_button.clicked.connect(self.check)
+        check_button.clicked.connect(self.predict_one)
+        # check_button.clicked.connect(self.check)  # 结算按钮绑定结算函数
 
         ok_button = QPushButton("确定", self)
         ok_button.move(600, cam_height + 50)
         ok_button.resize(130, 40)
-        ok_button.clicked.connect(self.ok)
+        ok_button.clicked.connect(self.ok)  # 确定按钮
 
-        self.category = []  # 类别列表
-        self.price = {}  # 价格字典
+        self.classes = []  # 类别列表
+        self.prices = {}  # 价格字典
 
         with open('classes.txt', 'r') as f:
             lines = f.readlines()
             for line in lines:
                 class_ = line[:-1]
-                self.category.append(class_)
+                self.classes.append(class_)
 
         with open('price.txt', 'r') as f:
             lines = f.readlines()
             for line in lines:
                 line = line[:-1].split(' ')
                 class_, price = line[0], line[1]
-                self.price[class_] = price
+                self.prices[class_] = price
 
-        print(self.category)
-        print(self.price)
+        print(self.classes)
+        print(self.prices)
 
         self.model = load_model('model.h5')
         print('Model loading complete!')
@@ -150,30 +161,30 @@ class MyWindow(QMainWindow):
         self.show()
 
     def predict_one(self):
-        img = cv2.imread('fqcd.jpg')
+        img = cv2.imread('test.jpg')
         img = cv2.resize(img, (cam_width, cam_height))
         # img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         class_, confidence = get_class_and_confidence(img, self.model)
-        category_name = self.category[int(class_)]
+        class_name = self.classes[int(class_)]
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(img)
         draw = ImageDraw.Draw(img)
         font_text = ImageFont.truetype("yy.ttf", 30, encoding="utf-8")
-        draw.text((5, 5), category_name + str(confidence) +
+        draw.text((5, 5), class_name + str(confidence) +
                   '%', (0, 255, 0), font=font_text)
         img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        print(category_name, '%', str(confidence))
+        print(class_name, '%', str(confidence))
 
         h, w = img.shape[:2]
         img = QImage(img, w, h, QImage.Format_RGB888)
         img = QPixmap.fromImage(img)
         self.check_pixmap = img
         self.isChecking = True
-        self.dish_label.setText("菜品名称：" + category_name)
-        self.price_label.setText("金额：" + self.price[category_name] + "元")
+        self.dish_label.setText("菜品名称：" + class_name)
+        self.price_label.setText("金额：" + self.prices[class_name] + "元")
         self.img_label.setPixmap(img)
         self.img_label.setScaledContents(True)  # 自适应大小
 
@@ -198,28 +209,28 @@ class MyWindow(QMainWindow):
             return
         fram = self.fram
         class_, confidence = get_class_and_confidence(fram, self.model)
-        category_name = self.category[int(class_)]
+        class_name = self.classes[int(class_)]
 
         img = cv2.cvtColor(fram, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(img)
 
         draw = ImageDraw.Draw(img)
         font_text = ImageFont.truetype("yy.ttf", 30, encoding="utf-8")
-        draw.text((5, 5), category_name + ' %' +
+        draw.text((5, 5), class_name + ' %' +
                   str(confidence), (0, 255, 0), font=font_text)
 
         img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        print(category_name, '%', str(confidence))
+        print(class_name, '%', str(confidence))
 
         h, w = img.shape[:2]
         img = QImage(img, w, h, QImage.Format_RGB888)
         img = QPixmap.fromImage(img)
         self.check_pixmap = img
         self.isChecking = True
-        self.dish_label.setText("菜品名称：" + category_name)
-        self.price_label.setText("金额：" + self.price[category_name] + "元")
+        self.dish_label.setText("菜品名称：" + class_name)
+        self.price_label.setText("金额：" + self.prices[class_name] + "元")
 
     def ok(self):
         self.isChecking = False
@@ -228,13 +239,13 @@ class MyWindow(QMainWindow):
 
 
 def cv_loop():
-    category = []
+    classes = []
     with open('classes.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             class_ = line[:-1]
             print(class_)
-            category.append(class_)
+            classes.append(class_)
 
     model = load_model('model.h5')
 
@@ -249,17 +260,17 @@ def cv_loop():
         class_, confidence = get_class_and_confidence(fram, model)
         if not class_ == -1 and confidence == -1:
             break
-        category_name = category[int(class_)]
+        class_name = classes[int(class_)]
 
         img = Image.fromarray(cv2.cvtColor(fram, cv2.COLOR_BGR2RGB))
         draw = ImageDraw.Draw(img)
         font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-        draw.text((5, 5), category_name + ' %' +
+        draw.text((5, 5), class_name + ' %' +
                   str(confidence), (0, 255, 0), font=font_text)
         fram = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         # cv2.putText(fram, category_name+' %'+str(confidence), (0,70), cv2.FONT_HERSHEY_COMPLEX, 3, (0, 255, 0), 6)
 
-        print(category_name, '%', str(confidence))
+        print(class_name, '%', str(confidence))
         cv2.namedWindow('fram', 0)
         cv2.resizeWindow('fram', window_width, window_height)
 
@@ -272,7 +283,7 @@ def cv_loop():
 
 def main():
     app = QApplication(sys.argv)
-    my = MyWindow()
+    window = MyWindow()
     sys.exit(app.exec_())
 
 
