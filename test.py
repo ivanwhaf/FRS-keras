@@ -6,11 +6,8 @@ from keras.models import Model
 import matplotlib.pyplot as plt  # install
 from image_preprocess import *
 
-
-# 输入图像维度
+# input shape
 width, height, depth = 100, 100, 3
-
-nb_filters1, nb_filters2 = 5, 10  # 卷积核的数目（即输出的维度）
 
 
 def get_class_and_confidence(img, model):
@@ -22,7 +19,7 @@ def get_class_and_confidence(img, model):
     except:
         print('resize error!')
         return -1, -1
-    img_ndarray = np.asarray(img, dtype='float64')/255
+    img_ndarray = np.asarray(img, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -34,7 +31,7 @@ def get_class_and_confidence(img, model):
     predict = model.predict(test_data)
     class_ = np.argmax(predict, axis=1)
     confidence = float(predict[0][class_])
-    confidence = '%.3f' % (confidence*100)  # 置信度转化为百分比，保留3位小数
+    confidence = '%.3f' % (confidence * 100)
     return class_, confidence
 
 
@@ -67,7 +64,7 @@ def show_intermediate_output(model, layer_name, image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.resize(image, (width, height))
 
-    img_ndarray = np.asarray(image, dtype='float64')/255
+    img_ndarray = np.asarray(image, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -79,10 +76,10 @@ def show_intermediate_output(model, layer_name, image):
     output = get_intermediate_output(model, layer_name, test_data)
     n = output.shape[-1]  # 特征图中特征个数
     size = output.shape[1]
-    display_grid = np.zeros((size*1, n*size))
+    display_grid = np.zeros((size * 1, n * size))
     for i in range(n):
         channel_image = output[:, :, i]
-        display_grid[0:size, i*size:(i+1)*size] = channel_image
+        display_grid[0:size, i * size:(i + 1) * size] = channel_image
     # plt.figure()
     # plt.title(layer_name)
     # plt.grid(False)
@@ -98,7 +95,7 @@ def show_heatmap(model, layer_name, image):
 
     image = cv2.resize(image, (width, height))
 
-    img_ndarray = np.asarray(image, dtype='float64')/255
+    img_ndarray = np.asarray(image, dtype='float64') / 255
     test_data = np.ndarray.flatten(img_ndarray)
     test_data = test_data.astype('float32')
 
@@ -108,10 +105,10 @@ def show_heatmap(model, layer_name, image):
         test_data = test_data.reshape(1, height, width, depth)
 
     preds = model.predict(test_data)
-    index = np.argmax(preds[0])  # 输出类别的索引
+    index = np.argmax(preds[0])  # index of output class
     output = model.output[:, index]
 
-    layer = model.get_layer(layer_name)  # 中间层
+    layer = model.get_layer(layer_name)  # intermediate layer
 
     grads = K.gradients(output, layer.output)[0]
 
@@ -122,7 +119,7 @@ def show_heatmap(model, layer_name, image):
 
     for i in range(layer_output_value.shape[-1]):
         layer_output_value[:, :, i
-                           ] *= pooled_grads_value[i]
+        ] *= pooled_grads_value[i]
     heatmap = np.mean(layer_output_value, axis=-1)
 
     # heatmap = np.maximum(heatmap, 0)
@@ -131,23 +128,23 @@ def show_heatmap(model, layer_name, image):
     plt.matshow(heatmap)
     plt.savefig('visualize/heatmap.jpg')
     plt.show()
-    
+
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
-    heatmap = np.uint8(255*heatmap)  # 转换为rgb格式
-    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)  # 热力图应用于原始图像
-    superimposed_img = heatmap*0.4+img  # 热力图强度因子0.4
+    heatmap = np.uint8(255 * heatmap)  # convert to rgb
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)  # heatmap apply to raw image
+    superimposed_img = heatmap * 0.4 + img  # heatmap intensity factor - 0.4
     cv2.imwrite('visualize/heatmap_apply.jpg', superimposed_img)
 
 
 def main():
     model = load_model('model.h5')
     model.summary()
-    #image = cv2.imread('test.jpg')
-    #show_intermediate_output(model, 'conv1', image)
-    #show_intermediate_output(model, 'maxpooling1', image)
-    #show_intermediate_output(model, 'conv2', image)
-    #show_intermediate_output(model, 'maxpooling2', image)
+    # image = cv2.imread('test.jpg')
+    # show_intermediate_output(model, 'conv1', image)
+    # show_intermediate_output(model, 'maxpooling1', image)
+    # show_intermediate_output(model, 'conv2', image)
+    # show_intermediate_output(model, 'maxpooling2', image)
 
     image = cv2.imread('test.jpg')
     show_heatmap(model, 'conv1', image)

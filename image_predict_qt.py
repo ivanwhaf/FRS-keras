@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/6
+# @LastEdit: 2020/8/13
 import sys
 import cv2  # install
 from keras.models import load_model
@@ -12,24 +12,25 @@ from PyQt5.QtCore import Qt, QTimer
 
 np.random.seed(1337)
 
-# 图像高宽
+# input shape
 width, height, depth = 100, 100, 3
 
-# 摄像头高宽
+# camera shape
 cam_width, cam_height = 800, 600
 
-# 窗口大小
+# window shape
 window_width, window_height = 1600, 1200
 
 
 def get_class_and_confidence(img, model):
-    """根据训练好的模型获取预测的类别和置信度
+    """get image's class and confidence according to trained model
+
     Args:
-        img: 要预测的图片
-        model: 训练好的keras模型
+        img: prediction image
+        model: keras model
     Returns:
-        class_: 预测的类别索引
-        confidence: 该类别的置信度
+        class_: class index
+        confidence: class's confidence
     """
     if depth == 1:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -50,12 +51,12 @@ def get_class_and_confidence(img, model):
     preds = model.predict(test_data)
     class_ = np.argmax(preds[0])
     confidence = float(preds[0][class_])
-    confidence = '%.3f' % (confidence * 100)  # 置信度转化为百分比，保留3位小数
+    confidence = '%.3f' % (confidence * 100)  # confidence percentage,save three decimal places
+
     return class_, confidence
 
 
 def predict_one_img(img_path):
-    # 预测单张图片
     category = []
     with open('classes.txt', 'r') as f:
         lines = f.readlines()
@@ -88,14 +89,14 @@ def predict_one_img(img_path):
 
 class MyWindow(QMainWindow):
     """
-    自定义Qt窗口
+    customized Qt window
     """
 
     def __init__(self):
         super().__init__()
         self.setGeometry(500, 300, cam_width, cam_height + 150)
         self.setFixedSize(cam_width, cam_height + 150)
-        self.setWindowTitle('菜品识别系统')
+        self.setWindowTitle('Food Recogintion System')
 
         self.img_label = QLabel(self)
         self.img_label.setGeometry(0, 0, cam_width, cam_height)
@@ -120,15 +121,15 @@ class MyWindow(QMainWindow):
         check_button.move(450, cam_height + 50)
         check_button.resize(130, 40)
         check_button.clicked.connect(self.predict_one)
-        # check_button.clicked.connect(self.check)  # 结算按钮绑定结算函数
+        # check_button.clicked.connect(self.check)  # check button bind check function
 
         ok_button = QPushButton("确定", self)
         ok_button.move(600, cam_height + 50)
         ok_button.resize(130, 40)
-        ok_button.clicked.connect(self.ok)  # 确定按钮
+        ok_button.clicked.connect(self.ok)  # Ok Button
 
-        self.classes = []  # 类别列表
-        self.prices = {}  # 价格字典
+        self.classes = []
+        self.prices = {}
 
         with open('classes.txt', 'r') as f:
             lines = f.readlines()
@@ -186,25 +187,25 @@ class MyWindow(QMainWindow):
         self.dish_label.setText("菜品名称：" + class_name)
         self.price_label.setText("金额：" + self.prices[class_name] + "元")
         self.img_label.setPixmap(img)
-        self.img_label.setScaledContents(True)  # 自适应大小
+        self.img_label.setScaledContents(True)  # self adaption
 
     def update(self):
-        # 定时器获取摄像头帧并转化成pixmap再显示在label上
+        # get camera frame and convert to pixmap to show on label
         if self.isChecking:
             self.img_label.setPixmap(self.check_pixmap)
-            # self.img_label.setScaledContents(True) #自适应大小
+            # self.img_label.setScaledContents(True) # self adaption
             return
-        ret, self.fram = self.cap.read()  # 读取摄像头帧
+        ret, self.fram = self.cap.read()  # read camera frame
         print('fram shape', self.fram.shape)
         fram = cv2.cvtColor(self.fram, cv2.COLOR_BGR2RGB)
         h, w = fram.shape[:2]
         img = QImage(fram, w, h, QImage.Format_RGB888)
         img = QPixmap.fromImage(img)
-        self.img_label.setPixmap(img)  # img label显示图像
-        self.img_label.setScaledContents(True)  # 自适应大小
+        self.img_label.setPixmap(img)  # show on img label
+        self.img_label.setScaledContents(True)  # self adaption
 
     def check(self):
-        # 结算按钮
+        # checks function
         if self.isChecking:
             return
         fram = self.fram

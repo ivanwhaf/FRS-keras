@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/6
+# @LastEdit: 2020/8/13
 import threading
 import cv2  # install
 from keras.models import load_model
@@ -10,13 +10,10 @@ import wx  # install
 
 np.random.seed(1337)
 
-# 图像高宽
 width, height, depth = 200, 200, 3
 
-# 摄像头高宽
 cam_width, cam_height = 800, 600
 
-# 窗口大小
 window_width, window_height = 1600, 1200
 
 
@@ -42,12 +39,11 @@ def get_class_and_confidence(img, model):
     preds = model.predict(test_data)
     class_ = np.argmax(preds[0], axis=1)
     confidence = float(preds[0][class_])
-    confidence = '%.3f' % (confidence * 100)  # 置信度转化为百分比，保留3位小数
+    confidence = '%.3f' % (confidence * 100)  # confidence percentage,save three decimal places
     return class_, confidence
 
 
 def predict_one_img(img_path):
-    # 预测单张图片
     classes = []
     with open('classes.txt', 'r') as f:
         lines = f.readlines()
@@ -145,5 +141,5 @@ class MainFrame(wx.Frame):
 
 def main():
     app = wx.App(False)
-    frame = MainFrame('菜品识别系统')
+    frame = MainFrame('Food Recognition System')
     app.MainLoop()
