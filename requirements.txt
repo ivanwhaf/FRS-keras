@@ -1,0 +1,7 @@
+keras
+numpy
+cv2
+pillow
+matplotlib
+graphviz
+pydot

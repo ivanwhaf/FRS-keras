@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7a4553fa-243d-4077-bffe-726cd613ad1e" name="Default Changelist" comment="beta 0.1.giant update,change image loading logic,simplify image preprocess code,modify something" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1h0VIQapfjzd1mMAvecyJHxmBDd" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunManager" selected="Python.image_train">
+    <configuration name="image_train" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Food-Recognition-System" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/image_train.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="spider_baidu" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Food-Recognition-System" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/spiders" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/spiders/spider_baidu.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="spider_douguo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Food-Recognition-System" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/spiders" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/spiders/spider_douguo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.image_train" />
+        <item itemvalue="Python.spider_baidu" />
+        <item itemvalue="Python.spider_douguo" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7a4553fa-243d-4077-bffe-726cd613ad1e" name="Default Changelist" comment="" />
+      <created>1599147915836</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1599147915836</updated>
+    </task>
+    <task id="LOCAL-00001" summary="beta 0.1.giant update,change image loading logic,simplify image preprocess code,modify something">
+      <created>1599188602954</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1599188602954</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="beta 0.1.giant update,change image loading logic,simplify image preprocess code,modify something" />
+    <option name="LAST_COMMIT_MESSAGE" value="beta 0.1.giant update,change image loading logic,simplify image preprocess code,modify something" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="347" y="139" key="#Inspections" timestamp="1599149707763">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state x="347" y="139" key="#Inspections/0.0.1440.920@0.0.1440.920" timestamp="1599149707763" />
+    <state x="462" y="261" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1599186159358">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state x="462" y="261" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1440.920@0.0.1440.920" timestamp="1599186159358" />
+    <state x="451" y="207" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1599188210797">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state x="451" y="207" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1440.920@0.0.1440.920" timestamp="1599188210797" />
+    <state width="1419" height="242" key="GridCell.Tab.0.bottom" timestamp="1599188776067">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="242" key="GridCell.Tab.0.bottom/0.0.1440.920@0.0.1440.920" timestamp="1599188776067" />
+    <state width="1419" height="242" key="GridCell.Tab.0.center" timestamp="1599188776067">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="242" key="GridCell.Tab.0.center/0.0.1440.920@0.0.1440.920" timestamp="1599188776067" />
+    <state width="1419" height="242" key="GridCell.Tab.0.left" timestamp="1599188776067">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="242" key="GridCell.Tab.0.left/0.0.1440.920@0.0.1440.920" timestamp="1599188776067" />
+    <state width="1419" height="242" key="GridCell.Tab.0.right" timestamp="1599188776067">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="242" key="GridCell.Tab.0.right/0.0.1440.920@0.0.1440.920" timestamp="1599188776067" />
+    <state width="1419" height="300" key="GridCell.Tab.1.bottom" timestamp="1599150875882">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="300" key="GridCell.Tab.1.bottom/0.0.1440.920@0.0.1440.920" timestamp="1599150875882" />
+    <state width="1419" height="300" key="GridCell.Tab.1.center" timestamp="1599150875882">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="300" key="GridCell.Tab.1.center/0.0.1440.920@0.0.1440.920" timestamp="1599150875882" />
+    <state width="1419" height="300" key="GridCell.Tab.1.left" timestamp="1599150875882">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="300" key="GridCell.Tab.1.left/0.0.1440.920@0.0.1440.920" timestamp="1599150875882" />
+    <state width="1419" height="300" key="GridCell.Tab.1.right" timestamp="1599150875882">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state width="1419" height="300" key="GridCell.Tab.1.right/0.0.1440.920@0.0.1440.920" timestamp="1599150875882" />
+    <state x="313" y="194" key="Vcs.Push.Dialog.v2" timestamp="1599188631088">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state x="313" y="194" key="Vcs.Push.Dialog.v2/0.0.1440.920@0.0.1440.920" timestamp="1599188631088" />
+    <state x="520" y="195" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog" timestamp="1599188759271">
+      <screen x="0" y="0" width="1440" height="920" />
+    </state>
+    <state x="520" y="195" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog/0.0.1440.920@0.0.1440.920" timestamp="1599188759271" />
+  </component>
+</project>
