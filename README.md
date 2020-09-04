@@ -4,10 +4,11 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * Also can be transplanted to other platforms like `Raspberry Pi`
 
 # Usage
-* 1.run spiders`spider_baidu.py`,`spider_douguo.py` to crawl raw image data from the internet
-* 2.create dataset folder and move raw image data into it.
+* 1.run spiders`spider_baidu.py` or `spider_douguo.py` to crawl raw image data from the internet
+* 2.create an empty folder and move raw images into it,this project was `dataset` folder
 * 3.run `image_train.py` to train the model (only when dataset is downloaded)
-* 4.run `image_predict_qt.py` to load the model and recongnize the food image
+* 4.run `image_predict_qt.py` to load the model and recongnize the food
+* if need plotting model structure,please install `graphviz` first
 
 # Program Structure
 ## Image Spiders module

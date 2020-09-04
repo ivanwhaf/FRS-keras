@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/13
+# @LastEdit: 2020/9/3
 import os
 import time
 import cv2  # install
@@ -22,12 +22,12 @@ np.random.seed(1337)
 os.environ["PATH"] += os.pathsep + \
                       'D:/Graphviz2.38/bin'  # add graphviz to environment variable,for plotting network's structure
 
-path = 'data'  # path of dataset
-epochs = 2000  # number of training
+path = './dataset'  # root path of dataset
+epochs = 800  # number of training
 nb_classes = 5  # number of class
 nb_per_class = 200  # number of each class
 batch_size = 64
-learning_rate = 0.0001
+learning_rate = 0.001
 activation = 'relu'
 width, height, depth = 100, 100, 3
 nb_filters1, nb_filters2 = 5, 10  # number of conv kernel(output dimension)
@@ -65,6 +65,7 @@ def set_model(lr=learning_rate, decay=1e-6, momentum=0.9):
 
     sgd = SGD(lr=lr, decay=decay, momentum=momentum,
               nesterov=True)  # optimizer
+
     model.compile(loss='categorical_crossentropy',
                   optimizer=sgd, metrics=['accuracy'])
     model.summary()  # output each layer's parameter of the model
@@ -81,19 +82,19 @@ class LossHistory(keras.callbacks.Callback):
 
     def on_batch_end(self, batch, logs={}):
         self.losses['batch'].append(logs.get('loss'))
-        self.accuracy['batch'].append(logs.get('acc'))
+        self.accuracy['batch'].append(logs.get('accuracy'))
         self.val_loss['batch'].append(logs.get('val_loss'))
-        self.val_acc['batch'].append(logs.get('val_acc'))
+        self.val_acc['batch'].append(logs.get('val_accuracy'))
 
     def on_epoch_end(self, batch, logs={}):
         self.losses['epoch'].append(logs.get('loss'))  # train loss
-        self.accuracy['epoch'].append(logs.get('acc'))  # train acc
-        self.val_loss['epoch'].append(logs.get('val_loss'))
-        self.val_acc['epoch'].append(logs.get('val_acc'))
+        self.accuracy['epoch'].append(logs.get('accuracy'))  # train acc
+        self.val_loss['epoch'].append(logs.get('val_loss'))  # val loss
+        self.val_acc['epoch'].append(logs.get('val_accuracy'))  # val acc
 
     def loss_plot(self, loss_type):
         iters = range(len(self.losses[loss_type]))
-        plt.figure(num='Change of parameters')
+        plt.figure('Change of accuracy and loss')
         # train acc
         plt.plot(iters, self.accuracy[loss_type], 'r', label='train acc')
         # train loss
@@ -105,9 +106,10 @@ class LossHistory(keras.callbacks.Callback):
             # val_loss
             plt.plot(iters, self.val_loss[loss_type], 'k', label='val loss')
 
-        plt.title('epoch=' + str(epochs) + ',lr=' + str(learning_rate) + ',batch_size=' + str(batch_size) +
-                  '\nactivation=' + activation + ',nb_classes=' + str(nb_classes) + ',nb_per_class=' + str(
+        plt.title('epoch:' + str(epochs) + ',lr:' + str(learning_rate) + ',batch_size:' + str(batch_size) +
+                  '\nactivation:' + activation + ',nb_classes:' + str(nb_classes) + ',nb_per_class:' + str(
             nb_per_class))
+
         plt.grid(True)
         plt.xlabel(loss_type)
         plt.ylabel('acc-loss')
@@ -137,10 +139,10 @@ def test_model(X_test, Y_test):
 
 
 def main():
-    (X_train, y_train), (X_val, y_val), (X_test, y_test), classes = load_img(path, nb_classes, nb_per_class,
-                                                                             width, height, depth, train_proportion,
-                                                                             valid_proportion,
-                                                                             test_proportion)  # load dataset
+    (X_train, y_train), (X_val, y_val), (X_test, y_test) = load_img(path, nb_classes, nb_per_class,
+                                                                    width, height, depth, train_proportion,
+                                                                    valid_proportion,
+                                                                    test_proportion)  # load dataset
 
     if K.image_data_format() == 'channels_first':
         X_train = X_train.reshape(X_train.shape[0], depth, height, width)
@@ -164,12 +166,13 @@ def main():
 
     model = set_model()  # load network model
 
-    # plot_model(model, to_file='model.png', show_shapes=True)  # save network's structure picture
+    plot_model(model, to_file='model.png', show_shapes=True, expand_nested=True)  # save network's structure picture
 
-    # write all class into 'txt' file
-    with open('classes.txt', 'w') as f:
-        for class_ in classes:
-            f.write(class_ + '\n')
+    classes = []
+    with open('classes.txt', 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            class_ = line[:-1]
+            classes.append(class_)
 
     start = time.clock()
     model = train_model(model, X_train, Y_train, X_val, Y_val)  # train model

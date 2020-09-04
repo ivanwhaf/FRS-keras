@@ -1,23 +1,23 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/13
+# @LastEdit: 2020/9/4
 import os
 import random
 import cv2  # install
 import numpy as np  # install
 
 
-def load_img(path, nb_classes, nb_per_class, width, height, depth, train_proportion, valid_proportion,
+def load_img(root, nb_classes, nb_per_class, width, height, depth, train_proportion, valid_proportion,
              test_proportion, normalize=True):
-    """function of loading images dataset.
-    
-    * image dataset folder must contain each class's children class folder.
+    """function of loading image dataset.
+
+    * image dataset's root folder must contain each class's children class folder.
     example:
-        folder 'vehicle' contains 'car','train' and 'bicycle' folder.
+        folder 'dataset' contains 'car','train' and 'bicycle' folder.
         each children class folder has corresponding images,'car' folder has 'car1.jpg','car2.jpg'.
     * file path name and image name better be named by english.
 
     Args:
-        path: image dataset's path
+        root: image dataset's root path
         nb_classes: number of image classes
         nb_per_class: number of each class's image
         width: width of output image
@@ -32,35 +32,33 @@ def load_img(path, nb_classes, nb_per_class, width, height, depth, train_proport
            (train_data, train_label): train data and label
            (valid_data, valid_label): valid data and label
            (test_data, test_label): test data and label
-           classes: class list
     """
     train_per_class = int(train_proportion * nb_per_class)
     valid_per_class = int(valid_proportion * nb_per_class)
     test_per_class = int(test_proportion * nb_per_class)
-    number = nb_classes * nb_per_class  # number of all images
-    n = 0  # images array's index
+    train_number = train_per_class * nb_classes  # number of train set
+    valid_number = valid_per_class * nb_classes  # number of valid set
+    test_number = test_per_class * nb_classes  # number of test set
+
     classes = []  # images classes list
-    images = np.empty((number, width * height * depth))  # images set
+    dataset = []  # dataset list,including image and label sequences
 
     print('Image classes:')
-    img_classes = os.listdir(path)
+    img_classes = os.listdir(root)
     for c, img_class in enumerate(img_classes):
         # stop loading dataset when class number is enough
         if c == nb_classes:
             break
-        img_class_path = os.path.join(path, img_class)
+        img_class_path = os.path.join(root, img_class)
         # skip if not folder
         if not os.path.isdir(img_class_path):
             continue
 
         print('<', img_class, '>')
         classes.append(img_class)
-
-        temp = []  # store each class's images temporarily,then shuffle them and add into 'images' array
-        m = 0  # number of each class's images that loaded successfully
-
+        m = 0
         imgs = os.listdir(img_class_path)
-        for img in imgs:
+        for _, img in enumerate(imgs):
             # stop loading dataset when image number of each class is enough
             if m == nb_per_class:
                 break
@@ -74,7 +72,7 @@ def load_img(path, nb_classes, nb_per_class, width, height, depth, train_proport
                     img_path, dtype=np.uint8), cv2.cv2.IMREAD_GRAYSCALE)  # chinese path gray
             # scaling and filtering
             try:
-                # default interpolation=cv2.INTER_LINEAR - Bilinear Interpolation
+                # default interpolation = cv2.INTER_LINEAR - Bilinear Interpolation
                 image = cv2.resize(image, (width, height))
                 if normalize:
                     image = cv2.medianBlur(image, 3)  # filtering
@@ -83,57 +81,46 @@ def load_img(path, nb_classes, nb_per_class, width, height, depth, train_proport
                 # os.remove(img_path)
                 # print(img_path+' has been deleted!')
                 continue
-
-            image_ndarray = np.asarray(image, dtype='float64') / 255
-            temp.append(np.ndarray.flatten(image_ndarray))
-            # images[n]=np.ndarray.flatten(image_ndarray)
-            n = n + 1
             m = m + 1
 
-        # image number is not enough
+            # add single data(including data and label) to dataset array
+            image_ndarray = np.asarray(image, dtype='float64') / 255
+            dataset.append([np.ndarray.flatten(image_ndarray), c])
+
+        # image not enough
         if m < nb_per_class:
             print('Image number insufficient!', m)
             raise Exception('Image number insufficient!')
 
-        random.shuffle(temp)  # shuffle each class's images
+    # shuffle the whole dataset
+    random.shuffle(dataset)
 
-        # add each class's images into all images array
-        images[n - nb_per_class:n] = temp[:]
+    # construct data set and label set
+    train_data = [data[0] for data in dataset[:train_number]]
+    train_label = [data[1] for data in dataset[:train_number]]
+    train_data = np.array(train_data, dtype='float32')
+    train_label = np.array(train_label, dtype='uint8')
 
-    # construct label array
-    label = np.empty(number, dtype='uint8')
-    for i in range(nb_classes):
-        label[i * nb_per_class:(i + 1) * nb_per_class] = i
+    valid_data = [data[0]
+                  for data in dataset[train_number:train_number + valid_number]]
+    valid_label = [data[1]
+                   for data in dataset[train_number:train_number + valid_number]]
+    valid_data = np.array(valid_data, dtype='float32')
+    valid_label = np.array(valid_label, dtype='uint8')
 
-    train_number = train_per_class * nb_classes  # number of train set
-    valid_number = valid_per_class * nb_classes  # number of valid set
-    test_number = test_per_class * nb_classes  # number of test set
+    test_data = [data[0] for data in dataset[train_number + valid_number:]]
+    test_label = [data[1] for data in dataset[train_number + valid_number:]]
+    test_data = np.array(test_data, dtype='float32')
+    test_label = np.array(test_label, dtype='uint8')
 
-    # train dataset,valid dataset,test dataset,convert float64 to float32 for saving memory
-    train_data = np.empty((train_number, width * height * depth), dtype='float32')
-    train_label = np.empty(train_number)
-    valid_data = np.empty((valid_number, width * height * depth), dtype='float32')
-    valid_label = np.empty(valid_number)
-    test_data = np.empty((test_number, width * height * depth), dtype='float32')
-    test_label = np.empty(test_number)
-
-    # traversal each class,construct dataset and label set
-    for i in range(nb_classes):
-        train_data[i * train_per_class: (i + 1) * train_per_class] = images[i *
-                                                                            nb_per_class: i * nb_per_class + train_per_class]  # train dataset
-        train_label[i * train_per_class: (i + 1) * train_per_class] = label[i *
-                                                                            nb_per_class: i * nb_per_class + train_per_class]  # train label
-        valid_data[i * valid_per_class: (i + 1) * valid_per_class] = images[i * nb_per_class +
-                                                                            train_per_class: i * nb_per_class + train_per_class + valid_per_class]  # valid dataset
-        valid_label[i * valid_per_class: (i + 1) * valid_per_class] = label[i * nb_per_class +
-                                                                            train_per_class: i * nb_per_class + train_per_class + valid_per_class]  # test label
-        test_data[i * test_per_class: (i + 1) * test_per_class] = images[i * nb_per_class + train_per_class +
-                                                                         valid_per_class: i * nb_per_class + train_per_class + valid_per_class + test_per_class]  # test dataset
-        test_label[i * test_per_class: (i + 1) * test_per_class] = label[i * nb_per_class + train_per_class +
-                                                                         valid_per_class: i * nb_per_class + train_per_class + valid_per_class + test_per_class]  # test label
+    # write all classes into 'classes.txt' file
+    with open('classes.txt', 'w', encoding='utf-8') as f:
+        for class_ in classes:
+            f.write(class_ + '\n')
 
     rval = [(train_data, train_label), (valid_data, valid_label),
-            (test_data, test_label), classes]
+            (test_data, test_label)]
+
     return rval
 
 

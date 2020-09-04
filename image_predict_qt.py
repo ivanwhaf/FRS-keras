@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/13
+# @LastEdit: 2020/9/3
 import sys
 import cv2  # install
 from keras.models import load_model
@@ -57,27 +57,27 @@ def get_class_and_confidence(img, model):
 
 
 def predict_one_img(img_path):
-    category = []
+    classes = []
     with open('classes.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             class_ = line[:-1]
             print(class_)
-            category.append(class_)
+            classes.append(class_)
 
     model = load_model('model.h5')
     img = cv2.imread(img_path)
     class_, confidence = get_class_and_confidence(img, model)
-    category_name = category[int(class_)]
+    class_name = classes[int(class_)]
 
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
     font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-    draw.text((5, 5), category_name + ' %' +
+    draw.text((5, 5), class_name + ' %' +
               str(confidence), (0, 255, 0), font=font_text)
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
-    print(category_name, '%', str(confidence))
+    print(class_name, '%', str(confidence))
 
     # cv2.namedWindow('img', 0)
     # cv2.resizeWindow('img',window_width,window_height)

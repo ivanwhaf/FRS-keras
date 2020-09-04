@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/13
+# @LastEdit: 2020/9/3
 import os
 import cv2  # install
 import numpy as np  # install
@@ -128,15 +128,14 @@ def show_heatmap(model, layer_name, image):
     pooled_grads_value, layer_output_value = iterate([test_data])
 
     for i in range(layer_output_value.shape[-1]):
-        layer_output_value[:, :, i
-        ] *= pooled_grads_value[i]
+        layer_output_value[:, :, i] *= pooled_grads_value[i]
     heatmap = np.mean(layer_output_value, axis=-1)
 
     # heatmap = np.maximum(heatmap, 0)
     # heatmap /= np.max(heatmap)
 
     plt.matshow(heatmap)
-    plt.savefig('visualize/heatmap.jpg')
+    plt.savefig('visualization/heatmap.jpg')
     plt.show()
 
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)

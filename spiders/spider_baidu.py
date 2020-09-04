@@ -1,16 +1,16 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/6
+# @LastEdit: 2020/9/4
 import os
 import json
 import urllib
 import requests  # install
 
 width, height = '', ''
-page = 6  # 需要下载的页数
+page = 10  # 需要下载的页数
 rn = 50  # 每一页数量
 
-keyword_list = ['鱼香茄子']
-path = '../raw_data/baidu'
+keyword_list = ['鱼香茄子', '西红柿炒鸡蛋', '红烧肉', '椒盐虾', '土豆丝', '白菜', '青菜', '冬瓜排骨汤']
+path = './raw_data/baidu'
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36',
     'Referer': 'https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=&sf=1&fmq=1551240778642_R\
