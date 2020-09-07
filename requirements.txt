@@ -5,3 +5,4 @@ pillow
 matplotlib
 graphviz
 pydot
+pyqt5

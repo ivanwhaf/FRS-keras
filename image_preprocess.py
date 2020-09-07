@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/4
+# @LastEdit: 2020/9/6
 import os
 import random
 import cv2  # install
@@ -16,7 +16,7 @@ def load_img(root, nb_classes, nb_per_class, width, height, depth, train_proport
         each children class folder has corresponding images,'car' folder has 'car1.jpg','car2.jpg'.
     * file path name and image name better be named by english.
 
-    Args:
+    Arguments:
         root: image dataset's root path
         nb_classes: number of image classes
         nb_per_class: number of each class's image
@@ -135,7 +135,7 @@ def img_normalize(path, width, height, gray=True):
     * file path name and image name better be named by english.
     * when detecting faces,'aarcascade_frontalface_default.xml' shoud be included.
 
-    Args:
+    Arguments:
         path: images path
         width: width of output image
         height: height of output image
@@ -175,7 +175,7 @@ def img_rename(path):
     example:
         'xxx.jpg','xxx.jpg' -> '1.jpg','2.jpg'
 
-    Args:
+    Arguments:
         path: images path
     Returns:
         None

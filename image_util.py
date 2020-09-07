@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/3
+# @LastEdit: 2020/9/7
 import os
 import cv2  # install
 import numpy as np  # install
@@ -83,7 +83,7 @@ def show_intermediate_output(model, layer_name, image):
     plt.title(layer_name)
     plt.grid(False)
     plt.imshow(display_grid, cmap='viridis')
-    plt.savefig('visualization/' + layer_name + '_output.jpg')  # save output diagram
+    plt.savefig('./visualization/' + layer_name + '_output.jpg')  # save output diagram
     plt.show()  # must show after imshow
 
     return display_grid
@@ -135,7 +135,7 @@ def show_heatmap(model, layer_name, image):
     # heatmap /= np.max(heatmap)
 
     plt.matshow(heatmap)
-    plt.savefig('visualization/heatmap.jpg')
+    plt.savefig('./visualization/heatmap.jpg')
     plt.show()
 
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -143,7 +143,7 @@ def show_heatmap(model, layer_name, image):
     heatmap = np.uint8(255 * heatmap)  # convert to rgb
     heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)  # heatmap apply to raw image
     superimposed_img = heatmap * 0.4 + img  # heatmap intensity factor - 0.4
-    cv2.imwrite('visualize/heatmap_apply.jpg', superimposed_img)
+    cv2.imwrite('./visualize/heatmap_apply.jpg', superimposed_img)
 
     return heatmap, superimposed_img
 

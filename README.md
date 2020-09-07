@@ -5,27 +5,43 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 
 # Usage
 * 1.run spiders`spider_baidu.py` or `spider_douguo.py` to crawl raw image data from the internet
-* 2.create an empty folder and move raw images into it,this project was `dataset` folder
-* 3.run `image_train.py` to train the model (only when dataset is downloaded)
-* 4.run `image_predict_qt.py` to load the model and recongnize the food
-* if need plotting model structure,please install `graphviz` first
+* 2.create an empty folder and move raw images into it,in this project was `dataset` folder
+* 3.run `train_model.py` to train the model (only when dataset was downloaded)
+* 4.run `ui.py` to show ui,load the model and recongnize the food
+* need plotting model structure? just install `graphviz` first
+* please screen out unqualified raw images manually after crawling
 
 # Program Structure
 ## Image Spiders module
 * folder: spiders 
-* file: `image_baidu.py` , `image_douguo.py`
+* file: `spider_baidu.py` , `spider_douguo.py`
+* use spiders to crawl raw images from the internet
 
 ## Image Preprocessing module
 * file:`image_preprocess.py`
+* preprocess image dataset
 
 ## Image Utils module
 * file:`image_util.py`
+* some image utils and algorithms
 
 ## Training module
-* file:`image_train.py`
+* file:`train_model.py`
+* main training program
 
 ## UI and Predicting module
-* file:`image_predict_qt.py`,`image_predict_wx.py`
+* file:`ui.py`,`ui_wx.py`
+* user interface,just to predict image,using pyqt5 and wxpython respectively
+
+# Dependency
+* keras
+* tensorflow-gpu
+* numpy
+* opencv
+* pillow
+* matplotlib (used to show parameter change)
+* pyqt5 or wxpython (UI)
+* graphviz and pydot (used to save network model)
 
 # Environment
 ## PC Ⅰ
@@ -48,6 +64,6 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * PyQt5 5.15.0
 * Nvidia MX350 2G
 
-## PC Ⅲ
+## Micro PC Ⅲ
 * Raspbian(Debian based)
-* ...
+* etc.

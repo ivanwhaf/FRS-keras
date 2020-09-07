@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/3
+# @LastEdit: 2020/9/6
 import os
 import time
 import cv2  # install
@@ -188,7 +188,7 @@ def main():
     image = cv2.imread('test.jpg')
     show_intermediate_output(model, 'maxpooling2', image)
     image = cv2.imread('test.jpg')
-    show_heatmap(model, 'conv2', image)
+    show_heatmap(model, 'conv2', image) # last conv layer
 
     score = test_model(X_test, Y_test)  # evaluate model's score
 
