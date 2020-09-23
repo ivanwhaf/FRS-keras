@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/4
+# @LastEdit: 2020/9/23
 import os
 import json
 import urllib
@@ -16,12 +16,12 @@ headers = {
     'Referer': 'https://image.baidu.com/search/index?tn=baiduimage&ipn=r&ct=201326592&cl=2&lm=-1&st=-1&fm=result&fr=&sf=1&fmq=1551240778642_R\
 		&pv=&ic=&nc=1&z=&hd=&latest=&copyright=&se=1&showtab=0&fb=0&width=&height=&face=0&istype=2&ie=utf-8&word=%E8%A5%BF%E7%BA%A2%E6%9F%BF%E7%82%92%E9%B8%A1%E8%9B%8B'
 }
-'''
+"""
 http://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&query
 	Word=%E8%A5%BF%E7%BA%A2%E6%9F%BF%E7%82%92%E9%B8%A1%E8%9B%8B&cl=2&lm=-1&ie=utf-8&oe=utf-8&adpicid=
 	&st=&z=&ic=&hd=&latest=&copyright=&word=%E8%A5%BF%E7%BA%A2%E6%9F%BF%E7%82%92%E9%B8%A1%E8%9B%8B&s=
 	&se=&tab=&width=&height=&face=&istype=&qc=&nc=1&fr=&expermode=&force=&pn=60&rn=60
-'''
+"""
 
 
 def download(lis, path, keyword):
@@ -79,8 +79,8 @@ def download_all(keyword):
 
 
 def main():
-    for k in keyword_list:
-        download_all(k)
+    for keyword in keyword_list:
+        download_all(keyword)
 
 
 if __name__ == '__main__':

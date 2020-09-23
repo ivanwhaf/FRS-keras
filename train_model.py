@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/6
+# @LastEdit: 2020/9/23
 import os
 import time
 import cv2  # install
@@ -15,12 +15,13 @@ from keras.models import load_model
 from keras.layers import MaxPooling2D, SeparableConv2D
 from keras.layers import Dense, Dropout, Activation, Flatten
 import matplotlib.pyplot as plt  # install
-from image_preprocess import load_img
+from image_preprocess import load_img_from_folder
 from image_util import show_intermediate_output, show_heatmap
+from predict import load_classes
 
 np.random.seed(1337)
 os.environ["PATH"] += os.pathsep + \
-                      'D:/Graphviz2.38/bin'  # add graphviz to environment variable,for plotting network's structure
+    'D:/Graphviz2.38/bin'  # add graphviz to environment variable,for plotting network's structure
 
 path = './dataset'  # root path of dataset
 epochs = 800  # number of training
@@ -139,10 +140,10 @@ def test_model(X_test, Y_test):
 
 
 def main():
-    (X_train, y_train), (X_val, y_val), (X_test, y_test) = load_img(path, nb_classes, nb_per_class,
-                                                                    width, height, depth, train_proportion,
-                                                                    valid_proportion,
-                                                                    test_proportion)  # load dataset
+    (X_train, y_train), (X_val, y_val), (X_test, y_test) = load_img_from_folder(path, nb_classes, nb_per_class,
+                                                                                width, height, depth, train_proportion,
+                                                                                valid_proportion,
+                                                                                test_proportion)  # load dataset
 
     if K.image_data_format() == 'channels_first':
         X_train = X_train.reshape(X_train.shape[0], depth, height, width)
@@ -166,13 +167,10 @@ def main():
 
     model = set_model()  # load network model
 
-    plot_model(model, to_file='model.png', show_shapes=True, expand_nested=True)  # save network's structure picture
+    plot_model(model, to_file='visualization/model.png', show_shapes=True,
+               expand_nested=True)  # save network's structure picture
 
-    classes = []
-    with open('classes.txt', 'r', encoding='utf-8') as f:
-        for line in f.readlines():
-            class_ = line[:-1]
-            classes.append(class_)
+    classes = load_classes('cfg/classes.cfg')
 
     start = time.clock()
     model = train_model(model, X_train, Y_train, X_val, Y_val)  # train model
@@ -188,7 +186,7 @@ def main():
     image = cv2.imread('test.jpg')
     show_intermediate_output(model, 'maxpooling2', image)
     image = cv2.imread('test.jpg')
-    show_heatmap(model, 'conv2', image) # last conv layer
+    show_heatmap(model, 'conv2', image)  # last conv layer
 
     score = test_model(X_test, Y_test)  # evaluate model's score
 

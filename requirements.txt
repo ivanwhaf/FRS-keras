@@ -6,3 +6,4 @@ matplotlib
 graphviz
 pydot
 pyqt5
+h5py

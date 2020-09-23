@@ -1,22 +1,29 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/6
+# @LastEdit: 2020/9/23
 import os
 import random
 import cv2  # install
 import numpy as np  # install
 
 
-def load_img(root, nb_classes, nb_per_class, width, height, depth, train_proportion, valid_proportion,
-             test_proportion, normalize=True):
-    """function of loading image dataset.
+def load_img_from_folder(root, nb_classes, nb_per_class, width, height, depth, train_proportion, valid_proportion,
+                         test_proportion, shuffle=True, rescale=True, normalize=True):
+    """function of loading image dataset from folder.
 
     * image dataset's root folder must contain each class's children class folder.
     example:
-        folder 'dataset' contains 'car','train' and 'bicycle' folder.
-        each children class folder has corresponding images,'car' folder has 'car1.jpg','car2.jpg'.
+        folder 'dataset' contains 'dog' and 'cat' folder.
+        each children class folder has corresponding images,'dog' folder has 'dog1.jpg','dog2.jpg'.
+        root/dog/1.png
+        root/dog/2.png
+        root/dog/3.png
+        ...
+        root/cat/1.png
+        root/cat/2.png
+        root/cat/3.png
     * file path name and image name better be named by english.
 
-    Arguments:
+    Args:
         root: image dataset's root path
         nb_classes: number of image classes
         nb_per_class: number of each class's image
@@ -49,19 +56,20 @@ def load_img(root, nb_classes, nb_per_class, width, height, depth, train_proport
         # stop loading dataset when class number is enough
         if c == nb_classes:
             break
+
         img_class_path = os.path.join(root, img_class)
         # skip if not folder
         if not os.path.isdir(img_class_path):
             continue
 
-        print('<', img_class, '>')
+        print(img_class)
         classes.append(img_class)
-        m = 0
         imgs = os.listdir(img_class_path)
-        for _, img in enumerate(imgs):
+        for img in imgs:
             # stop loading dataset when image number of each class is enough
-            if m == nb_per_class:
+            if len(dataset) == (c+1)*nb_per_class:
                 break
+
             img_path = os.path.join(img_class_path, img)
             # read image
             if depth == 3:
@@ -74,26 +82,30 @@ def load_img(root, nb_classes, nb_per_class, width, height, depth, train_proport
             try:
                 # default interpolation = cv2.INTER_LINEAR - Bilinear Interpolation
                 image = cv2.resize(image, (width, height))
-                if normalize:
+                if rescale:
                     image = cv2.medianBlur(image, 3)  # filtering
             except:
-                print(img_path, 'resize error!')
+                print(img_path, 'failed to resize!')
                 # os.remove(img_path)
                 # print(img_path+' has been deleted!')
                 continue
-            m = m + 1
+
+            if normalize:
+                image_ndarray = np.asarray(image, dtype='float64') / 255
+            else:
+                image_ndarray = np.asarray(image, dtype='float64')
 
             # add single data(including data and label) to dataset array
-            image_ndarray = np.asarray(image, dtype='float64') / 255
             dataset.append([np.ndarray.flatten(image_ndarray), c])
 
         # image not enough
-        if m < nb_per_class:
-            print('Image number insufficient!', m)
+        if len(dataset) < (c+1)*nb_per_class:
+            print(img_class, 'Image number insufficient!')
             raise Exception('Image number insufficient!')
 
     # shuffle the whole dataset
-    random.shuffle(dataset)
+    if shuffle:
+        random.shuffle(dataset)
 
     # construct data set and label set
     train_data = [data[0] for data in dataset[:train_number]]
@@ -114,9 +126,12 @@ def load_img(root, nb_classes, nb_per_class, width, height, depth, train_proport
     test_label = np.array(test_label, dtype='uint8')
 
     # write all classes into 'classes.txt' file
-    with open('classes.txt', 'w', encoding='utf-8') as f:
-        for class_ in classes:
-            f.write(class_ + '\n')
+    with open('cfg/classes.cfg', 'w', encoding='utf-8') as f:
+        for idx, class_ in enumerate(classes):
+            if idx+1 == len(classes):
+                f.write(class_ + ' ' + str(idx))
+            else:
+                f.write(class_ + ' ' + str(idx) + '\n')
 
     rval = [(train_data, train_label), (valid_data, valid_label),
             (test_data, test_label)]
@@ -135,13 +150,11 @@ def img_normalize(path, width, height, gray=True):
     * file path name and image name better be named by english.
     * when detecting faces,'aarcascade_frontalface_default.xml' shoud be included.
 
-    Arguments:
+    Args:
         path: images path
         width: width of output image
         height: height of output image
         gray: whether need convert to gray,default need
-    Returns:
-        None
     """
     img_classes = os.listdir(path)
     for img_class in img_classes:
@@ -156,13 +169,14 @@ def img_normalize(path, width, height, gray=True):
                     image = cv2.resize(image, (width, height),
                                        interpolation=cv2.INTER_CUBIC)
                 except:
-                    print(img_path + ' resize error!')
+                    print(img_path + ' failed to resize!')
                     os.remove(img_path)
                     print(img_path + ' has been deleted!')
                     continue
                 # convert to gray
                 if gray:
                     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                # rewrite image
                 cv2.imwrite(img_path, image)
                 print(img_path, 'normalized successfully!')
     print('All images normalized successfully!')
@@ -175,10 +189,8 @@ def img_rename(path):
     example:
         'xxx.jpg','xxx.jpg' -> '1.jpg','2.jpg'
 
-    Arguments:
+    Args:
         path: images path
-    Returns:
-        None
     """
     classes = os.listdir(path)
     for class_ in classes:

@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/7
+# @LastEdit: 2020/9/23
 import os
 import cv2  # install
 import numpy as np  # install
@@ -83,7 +83,8 @@ def show_intermediate_output(model, layer_name, image):
     plt.title(layer_name)
     plt.grid(False)
     plt.imshow(display_grid, cmap='viridis')
-    plt.savefig('./visualization/' + layer_name + '_output.jpg')  # save output diagram
+    plt.savefig('./visualization/' + layer_name +
+                '_output.jpg')  # save output diagram
     plt.show()  # must show after imshow
 
     return display_grid
@@ -141,7 +142,8 @@ def show_heatmap(model, layer_name, image):
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
     heatmap = np.uint8(255 * heatmap)  # convert to rgb
-    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)  # heatmap apply to raw image
+    # heatmap apply to raw image
+    heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
     superimposed_img = heatmap * 0.4 + img  # heatmap intensity factor - 0.4
     cv2.imwrite('./visualize/heatmap_apply.jpg', superimposed_img)
 
@@ -165,7 +167,8 @@ def face_detect():
         ret, fram = cap.read()
         faces = face_cascade.detectMultiScale(fram, 1.1, 7)
         for x, y, w, h in faces:
-            cv2.rectangle(fram, (x - 5, y - 25), (x + w, y + h), (0, 255, 0), 2)
+            cv2.rectangle(fram, (x - 5, y - 25),
+                          (x + w, y + h), (0, 255, 0), 2)
             cv2.imshow('fram', fram)
 
 
@@ -188,7 +191,8 @@ def cut_face(path):
             for img in imgs:
                 img_path = os.path.join(img_category_path, img)
                 face = cv2.imread(img_path)  # read image
-                faces = face_cascade.detectMultiScale(face, 1.1, 7)  # detect faces
+                faces = face_cascade.detectMultiScale(
+                    face, 1.1, 7)  # detect faces
                 for x, y, w, h in faces[0]:
                     # cv2.rectangle(face,(x-5,y-25),(x+w,y+h),(0,255,0),2)
                     face = face[y - 60:y + h + 15, x:x + w]
@@ -607,12 +611,3 @@ def get_video():
 
 
 # -------------------------------------------------------------
-
-
-def main():
-    # get_video()
-    pass
-
-
-if __name__ == '__main__':
-    main()

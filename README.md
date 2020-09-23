@@ -4,19 +4,19 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * Also can be transplanted to other platforms like `Raspberry Pi`
 
 # Usage
+## run directly
 * 1.run spiders`spider_baidu.py` or `spider_douguo.py` to crawl raw image data from the internet
 * 2.create an empty folder and move raw images into it,in this project was `dataset` folder
 * 3.run `train_model.py` to train the model (only when dataset was downloaded)
-* 4.run `ui.py` to show ui,load the model and recongnize the food
+* 4.run `cam_ui.py` to show ui,load the model and recongnize the food
+## run in command line
+* 1.`python predict.py -i test.jpg`
+* 2.`python predict.py -v test.mp4`
+## caution
 * need plotting model structure? just install `graphviz` first
 * please screen out unqualified raw images manually after crawling
 
 # Program Structure
-## Image Spiders module
-* folder: spiders 
-* file: `spider_baidu.py` , `spider_douguo.py`
-* use spiders to crawl raw images from the internet
-
 ## Image Preprocessing module
 * file:`image_preprocess.py`
 * preprocess image dataset
@@ -30,8 +30,13 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * main training program
 
 ## UI and Predicting module
-* file:`ui.py`,`ui_wx.py`
+* file:`cam_ui.py`,`predict.py`
 * user interface,just to predict image,using pyqt5 and wxpython respectively
+
+## Image Spiders module
+* folder: spiders 
+* file: `spider_baidu.py` , `spider_douguo.py`
+* use spiders to crawl raw images from the internet
 
 # Dependency
 * keras
@@ -42,6 +47,7 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * matplotlib (used to show parameter change)
 * pyqt5 or wxpython (UI)
 * graphviz and pydot (used to save network model)
+* h5py (used to save model .h5 file)
 
 # Environment
 ## PC Ⅰ

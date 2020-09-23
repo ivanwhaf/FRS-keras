@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/8/13
+# @LastEdit: 2020/9/23
 import threading
 import cv2  # install
 from keras.models import load_model
@@ -7,8 +7,8 @@ from keras import backend as K
 import numpy as np  # install
 from PIL import Image, ImageDraw, ImageFont  # install
 import wx  # install
-
-np.random.seed(1337)
+from predict import predict_class_name_and_confidence
+from predict import load_prices
 
 width, height, depth = 200, 200, 3
 
@@ -39,32 +39,24 @@ def get_class_and_confidence(img, model):
     preds = model.predict(test_data)
     class_ = np.argmax(preds[0], axis=1)
     confidence = float(preds[0][class_])
-    confidence = '%.3f' % (confidence * 100)  # confidence percentage,save three decimal places
+    # confidence percentage,save three decimal places
+    confidence = '%.2f' % (confidence * 100)
     return class_, confidence
 
 
 def predict_one_img(img_path):
-    classes = []
-    with open('classes.txt', 'r') as f:
-        lines = f.readlines()
-        for line in lines:
-            class_ = line[:-1]
-            print(class_)
-            classes.append(class_)
-
     model = load_model('model.h5')
     img = cv2.imread(img_path)
-    class_, confidence = get_class_and_confidence(img, model)
-    class_name = classes[int(class_)]
+    class_, confidence = get_class_name_and_confidence(img, model)
 
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
-    font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
+    font_text = ImageFont.truetype("simsun.ttc", 60, encoding="utf-8")
     draw.text((5, 5), class_name + ' %' +
               str(confidence), (0, 255, 0), font=font_text)
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
-    print(class_name, '%', str(confidence))
+    print('Class name:', class_name, 'confidence:', str(confidence)+'%')
     # cv2.namedWindow('img', 0)
     # cv2.resizeWindow('img',window_width,window_height)
 
@@ -81,20 +73,12 @@ class MainFrame(wx.Frame):
         self.panel = wx.Panel(self)
         self.Center()
         self.image_cover = wx.Image(
-            'fqcd.jpg', wx.BITMAP_TYPE_ANY).Scale(350, 300)
+            'test.jpg', wx.BITMAP_TYPE_ANY).Scale(350, 300)
 
         self.staticbitmap = wx.StaticBitmap(
             self.panel, -1, wx.Bitmap(self.image_cover))
         start_button = wx.Button(self.panel, label='Start')
         close_button = wx.Button(self.panel, label='Close')
-
-        self.category = []
-        with open('classes.txt', 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                class_ = line[:-1]
-                print(class_)
-                self.category.append(class_)
 
         self.model = load_model('model.h5')
         self.cap = cv2.VideoCapture(0)
@@ -106,35 +90,33 @@ class MainFrame(wx.Frame):
 
     def update(self):
         while True:
-            ret, fram = self.cap.read()
+            ret, frame = self.cap.read()
             if not ret:
                 continue
-            print(fram.shape)
-            fram = cv2.cvtColor(fram, cv2.COLOR_BGR2RGB)
-            '''
-            clas,confidence=get_class_and_confidence(fram,self.model)
-            if not clas==-1 and confidence==-1:
+            print(frame.shape)
+            # frame = cv2.cvtColor(fram, cv2.COLOR_BGR2RGB)
+            class_name, confidence = get_class_name_and_confidence(
+                frame, self.model)
+
+            img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            draw = ImageDraw.Draw(img)
+            font_text = ImageFont.truetype("simsun.ttc", 60, encoding="utf-8")
+            draw.text((5, 5), class_name + str(confidence) +
+                      '%', (0, 255, 0), font=font_text)
+            frame = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+            # cv2.putText(frame, category_name+' %'+str(confidence),
+            #             (0, 70), cv2.FONT_HERSHEY_COMPLEX, 3, (0, 255, 0), 6)
+
+            cv2.namedWindow('frame', 0)
+            cv2.resizeWindow('frame', window_width, window_height)
+
+            cv2.imshow('frame', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            category_name=self.category[int(clas)]
 
-            img = Image.fromarray(cv2.cvtColor(fram, cv2.COLOR_BGR2RGB))
-            draw=ImageDraw.Draw(img)
-            fontText = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-            draw.text((5,5),category_name+' %'+str(confidence),(0,255,0),font=fontText)
-            fram=cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
-            #cv2.putText(fram, category_name+' %'+str(confidence), (0,70), cv2.FONT_HERSHEY_COMPLEX, 3, (0, 255, 0), 6)
-        
-            print(category_name+'%'+str(confidence))
-            #cv2.namedWindow('fram', 0)
-            #cv2.resizeWindow('fram',window_width,window_height)
-
-            #cv2.imshow('fram', fram)
-            #if cv2.waitKey(1) & 0xFF==ord('q'):
-                #break
-            '''
-            h, w = fram.shape[:2]
-            fram = wx.Bitmap.FromBuffer(w, h, fram)
-            self.staticbitmap.SetBitmap(fram)
+            h, w = frame.shape[:2]
+            frame = wx.Bitmap.FromBuffer(w, h, frame)
+            self.staticbitmap.SetBitmap(frame)
             # self.staticbitmap.Refresh()
         self.cap.release()
 
