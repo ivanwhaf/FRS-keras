@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/23
+# @LastEdit: 2020/9/25
 import os
 import time
 import cv2  # install
@@ -15,9 +15,9 @@ from keras.models import load_model
 from keras.layers import MaxPooling2D, SeparableConv2D
 from keras.layers import Dense, Dropout, Activation, Flatten
 import matplotlib.pyplot as plt  # install
-from image_preprocess import load_img_from_folder
+from preprocess import load_img_from_folder
 from image_util import show_intermediate_output, show_heatmap
-from predict import load_classes
+from detect import load_classes
 
 np.random.seed(1337)
 os.environ["PATH"] += os.pathsep + \
@@ -170,7 +170,7 @@ def main():
     plot_model(model, to_file='visualization/model.png', show_shapes=True,
                expand_nested=True)  # save network's structure picture
 
-    classes = load_classes('cfg/classes.cfg')
+    classes = load_classes('./cfg/classes.cfg')
 
     start = time.clock()
     model = train_model(model, X_train, Y_train, X_val, Y_val)  # train model

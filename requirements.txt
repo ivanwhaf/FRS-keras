@@ -1,6 +1,7 @@
+tensorflow
 keras
 numpy
-cv2
+opencv-python
 pillow
 matplotlib
 graphviz

@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/23
+# @LastEdit: 2020/9/25
 import os
 import random
 import cv2  # install
@@ -126,7 +126,7 @@ def load_img_from_folder(root, nb_classes, nb_per_class, width, height, depth, t
     test_label = np.array(test_label, dtype='uint8')
 
     # write all classes into 'classes.txt' file
-    with open('cfg/classes.cfg', 'w', encoding='utf-8') as f:
+    with open('./cfg/classes.cfg', 'w', encoding='utf-8') as f:
         for idx, class_ in enumerate(classes):
             if idx+1 == len(classes):
                 f.write(class_ + ' ' + str(idx))

@@ -24,7 +24,7 @@ def download(lis, path, keyword):
         os.mkdir(c_path)
     for url in lis:
         r = requests.get(url, headers=headers, stream=True)
-        with open(c_path + '\\' + str(number) + '.jpg', 'wb') as f:
+        with open(c_path + '\\' + keyword+str(number) + '.jpg', 'wb') as f:
             for chunk in r.iter_content(chunk_size=32):
                 f.write(chunk)
         print(number, url, 'downloaded!')

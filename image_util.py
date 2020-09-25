@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/23
+# @LastEdit: 2020/9/25
 import os
 import cv2  # install
 import numpy as np  # install
@@ -7,10 +7,10 @@ from keras import backend as K
 from keras.models import Model
 import matplotlib.pyplot as plt  # install
 
-# ----------------Neural Network Visualization----------------
-
 # input shape
 width, height, depth = 100, 100, 3
+
+# ----------------Neural Network Visualization----------------
 
 
 def deprocess_image(x):

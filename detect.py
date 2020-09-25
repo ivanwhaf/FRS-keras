@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/23
+# @LastEdit: 2020/9/25
 import os
 import argparse
 import cv2  # install
@@ -72,22 +72,22 @@ def predict_class_idx_and_confidence(img, model):
     """predict image class and confidence according to trained model
 
     Args:
-        img: prediction image
+        img: image to predict
         model: keras model
     Returns:
-        class_: class index
+        class_idx: class index
         confidence: class confidence
     """
     # call base prediction function
     preds = predict_img(img, model)
 
-    class_ = np.argmax(preds[0])
-    confidence = float(preds[0][class_])
+    class_idx = np.argmax(preds[0])
+    confidence = float(preds[0][class_idx])
 
     # confidence percentage,save three decimal places
     confidence = '%.2f' % (confidence * 100)
 
-    return class_, confidence
+    return class_idx, confidence
 
 
 classes = load_classes('cfg/classes.cfg')
@@ -97,44 +97,40 @@ def predict_class_name_and_confidence(img, model):
     """predict image class and confidence according to trained model
 
     Args:
-        img: prediction image
+        img: image to predict
         model: keras model
     Returns:
-        class_: class index
+        class_idx: class index
         confidence: class confidence
     """
-    class_, confidence = predict_class_idx_and_confidence(img, model)
-    class_name = classes[int(class_)]
+    class_idx, confidence = predict_class_idx_and_confidence(img, model)
+    class_name = classes[int(class_idx)]
 
     return class_name, confidence
 
 
-def predict_and_show_one_img(img, model, classes):
+def predict_and_show_one_img(img, model):
     """get model output of one image
 
     Args:
         img: image ndarray
         model: keras trained model
-        classes: classes list
     Returns:
         class_name: class name
         confidence: class confidence
     """
-    class_, confidence = predict_class_and_confidence(img, model)
-    class_name = classes[int(class_)]
+    class_name, confidence = predict_class_name_and_confidence(img, model)
 
     img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
-    font_text = ImageFont.truetype("yy.ttf", 60, encoding="utf-8")
-    draw.text((5, 5), class_name + ' %' +
-              str(confidence), (0, 255, 0), font=font_text)
-
+    font_text = ImageFont.truetype("simsum.ttc", 26, encoding="utf-8")
+    draw.text((5, 5), class_name + ' ' + str(confidence) +
+              '%', (0, 255, 0), font=font_text)
     img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
     # cv2.namedWindow('img', 0)
     # cv2.resizeWindow('img',window_width,window_height)
 
-    # show image
     cv2.imshow('img', img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -172,14 +168,15 @@ if __name__ == "__main__":
     print('Model successfully loaded...')
 
     if image_path:
+        # img = cv2.imread(image_path)
+        # predict_and_show_one_img(img,model)
         img = cv2.imread(image_path)
         class_name, confidence = predict_class_name_and_confidence(img, model)
-        print('Class name:', class_name, 'confidence:', str(confidence)+'%')
+        print('Class name:', class_name, 'Confidence:', str(confidence)+'%')
     elif video_path:
         cap = cv2.VideoCapture(video_path)
         while cap.isOpened():
             ret, frame = cap.read()
-            # frame = raw_frame
             if not ret:
                 break
             class_name, confidence = predict_class_name_and_confidence(
@@ -187,12 +184,12 @@ if __name__ == "__main__":
 
             img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             draw = ImageDraw.Draw(img)
-            font_text = ImageFont.truetype("simsun.ttc", 60, encoding="utf-8")
-            draw.text((5, 5), class_name +
+            font_text = ImageFont.truetype("simsun.ttc", 26, encoding="utf-8")
+            draw.text((5, 5), class_name + ' ' +
                       str(confidence)+'%', (0, 255, 0), font=font_text)
             frame = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
-            print('Class name:', class_name, 'confidence:', str(confidence)+'%')
+            print('Class name:', class_name, 'Confidence:', str(confidence)+'%')
             cv2.resizeWindow('frame', (int(cap.get(3)), int(cap.get(4))))
             cv2.imshow("frame", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):

@@ -1,5 +1,5 @@
 # @Author: Ivan
-# @LastEdit: 2020/9/23
+# @LastEdit: 2020/9/25
 import sys
 import cv2  # install
 import numpy as np  # install
@@ -7,18 +7,15 @@ from PIL import Image, ImageDraw, ImageFont  # install
 from PyQt5.QtWidgets import QWidget, QPushButton, QApplication, QLabel, QMainWindow  # install
 from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import Qt, QTimer
-from predict import predict_class_idx_and_confidence, predict_class_name_and_confidence
-from predict import load_keras_model, load_classes, load_prices, predict_img
-
+from detect import predict_class_idx_and_confidence, predict_class_name_and_confidence
+from detect import load_keras_model, load_classes, load_prices
 
 # camera shape
 # cam_width, cam_height = 800, 600
 cam_width, cam_height = 848, 480
-# cap = cv2.VideoCapture(0)
-# cam_width, cam_height = cap.get(3), cap.get(4)
+
 
 # window shape
-# window_width, window_height = 1600, 1200
 window_width, window_height = 1600, 1200
 
 
@@ -54,7 +51,6 @@ class MyWindow(QMainWindow):
         check_button = QPushButton("结算", self)
         check_button.move(500, cam_height + 50)
         check_button.resize(130, 40)
-        # check_button.clicked.connect(self.predict_one_img)
         check_button.clicked.connect(self.check)
 
         confirm_button = QPushButton("确定", self)
@@ -76,33 +72,6 @@ class MyWindow(QMainWindow):
 
         # self.setCentralWidget(self.img_label)
         self.show()
-
-    def predict_one_img(self):
-        img = cv2.imread('test.jpg')
-        img = cv2.resize(img, (cam_width, cam_height))
-
-        class_name, confidence = predict_class_name_and_confidence(
-            img, self.model)
-
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(img)
-        draw = ImageDraw.Draw(img)
-        font_text = ImageFont.truetype("simsun.ttc", 26, encoding="utf-8")
-        draw.text((5, 5), class_name + str(confidence) +
-                  '%', (0, 255, 0), font=font_text)
-        img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        print('class name:', class_name, 'confidence:', str(confidence)+'%')
-
-        h, w = img.shape[:2]
-        img = QImage(img, w, h, QImage.Format_RGB888)
-        img = QPixmap.fromImage(img)
-        self.isChecking = True
-        self.dish_label.setText("菜品名称：" + class_name)
-        self.price_label.setText("金额：" + self.prices[class_name] + "元")
-        self.img_label.setPixmap(img)
-        self.img_label.setScaledContents(True)  # self adaption
 
     def update_frame(self):
         # get camera frame and convert to pixmap to show on img label
@@ -131,13 +100,13 @@ class MyWindow(QMainWindow):
 
         draw = ImageDraw.Draw(img)
         font_text = ImageFont.truetype("simsun.ttc", 26, encoding="utf-8")
-        draw.text((5, 5), class_name + str(confidence) +
+        draw.text((5, 5), class_name + ' ' + str(confidence) +
                   '%', (0, 255, 0), font=font_text)
 
         img = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        print('Class name:', class_name, 'confidence:', str(confidence)+'%')
+        print('Class name:', class_name, 'Confidence:', str(confidence)+'%')
 
         h, w = img.shape[:2]
         img = QImage(img, w, h, QImage.Format_RGB888)
@@ -166,23 +135,22 @@ def cv_loop():
     while True:
         ret, frame = cap.read()
         if not ret:
-            continue
+            break
         print('frame shape:', frame.shape)
         class_name, confidence = predict_class_name_and_confidence(
             frame, model)
 
         img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         draw = ImageDraw.Draw(img)
-        font_text = ImageFont.truetype("simsun.ttc", 60, encoding="utf-8")
-        draw.text((5, 5), class_name +
-                  str(confidence)+'%', (0, 255, 0), font=font_text)
+        font_text = ImageFont.truetype("simsun.ttc", 26, encoding="utf-8")
+        draw.text((5, 5), class_name + ' ' + str(confidence) +
+                  '%', (0, 255, 0), font=font_text)
         frame = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
         # cv2.putText(frame, category_name+' %'+str(confidence), (0,70), cv2.FONT_HERSHEY_COMPLEX, 3, (0, 255, 0), 6)
 
-        print('Class name:', class_name, 'confidence:', str(confidence)+'%')
+        print('Class name:', class_name, 'Confidence:', str(confidence)+'%')
         cv2.namedWindow('frame', 0)
-        cv2.resizeWindow('frame', window_width, window_height)
-
+        cv2.resizeWindow('frame', (int(cap.get(3)), int(cap.get(4))))
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -192,6 +160,7 @@ def cv_loop():
 
 
 def main():
+    # cv_loop()  # only when qt not downloaded
     app = QApplication(sys.argv)
     window = MyWindow()
     sys.exit(app.exec_())

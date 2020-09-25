@@ -7,18 +7,18 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 ## run directly
 * 1.run spiders`spider_baidu.py` or `spider_douguo.py` to crawl raw image data from the internet
 * 2.create an empty folder and move raw images into it,in this project was `dataset` folder
-* 3.run `train_model.py` to train the model (only when dataset was downloaded)
-* 4.run `cam_ui.py` to show ui,load the model and recongnize the food
+* 3.run `train.py` to train the model (only when dataset was downloaded)
+* 4.run `cam_demo.py` to show ui,load the model and recongnize the food
 ## run in command line
-* 1.`python predict.py -i test.jpg`
-* 2.`python predict.py -v test.mp4`
+* `python detect.py -i test.jpg`
+* `python detect.py -v test.mp4`
 ## caution
 * need plotting model structure? just install `graphviz` first
 * please screen out unqualified raw images manually after crawling
 
 # Program Structure
 ## Image Preprocessing module
-* file:`image_preprocess.py`
+* file:`preprocess.py`
 * preprocess image dataset
 
 ## Image Utils module
@@ -26,11 +26,11 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * some image utils and algorithms
 
 ## Training module
-* file:`train_model.py`
+* file:`train.py`
 * main training program
 
 ## UI and Predicting module
-* file:`cam_ui.py`,`predict.py`
+* file:`cam_demo.py`,`predict.py`
 * user interface,just to predict image,using pyqt5 and wxpython respectively
 
 ## Image Spiders module
@@ -38,11 +38,19 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * file: `spider_baidu.py` , `spider_douguo.py`
 * use spiders to crawl raw images from the internet
 
+## Image detection module
+* file: `detect.py`
+* run in command line to detect
+
+# Requirements
+```bash
+$ pip install -r requirements.txt
+```
 # Dependency
 * keras
 * tensorflow-gpu
 * numpy
-* opencv
+* opencv-python
 * pillow
 * matplotlib (used to show parameter change)
 * pyqt5 or wxpython (UI)
