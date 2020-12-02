@@ -1,1 +1,1 @@
-from .predict import predict_class_name_and_confidence, predict_class_idx_and_confidence
+from .detect import predict_class_name_and_confidence, predict_class_idx_and_confidence
