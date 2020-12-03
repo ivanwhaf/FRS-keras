@@ -1,6 +1,6 @@
 # Food-Recognition-System
 * Deep Learning based food recognition system
-Using `Keras`(`Tensorflow` backend) deep learning framwork
+Using `Keras`(`Tensorflow` backend) deep learning framework
 * Also can be transplanted to other platforms like `Raspberry Pi`
 * This tensorflow repo is **no longer maintained** now :(, plz see [FRS-pytorch](https://github.com/ivanwhaf/FRS-pytorch) for more details
 
@@ -11,7 +11,7 @@ Using `Keras`(`Tensorflow` backend) deep learning framwork
 * 3.run `train.py` to train the model (only when dataset was downloaded)
 
 ## Run directly
-* run `cam_demo.py` to show ui,load the model and recongnize the food
+* run `cam_demo.py` to show ui, load the model and recognize the food
 
 ## Run in command line
 cd your project path and type:
@@ -82,5 +82,5 @@ $ pip install -r requirements.txt
 * Nvidia MX350 2G
 
 ## Micro PC Ⅲ
-* Raspbian(Debian based)
+* Raspbian (Debian based)
 * etc.
